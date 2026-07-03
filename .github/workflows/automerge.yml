@@ -1,0 +1,66 @@
+name: Auto Merge
+
+on: [ pull_request_target ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-slim
+    if: github.repository == 'JabRef/html-to-node'
+    env:
+      HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+      USER:      ${{ github.event.pull_request.user.login }}
+      TITLE:     ${{ github.event.pull_request.title }}
+      GH_TOKEN:  ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Determine if PR should be auto-merged
+        id: shouldrun
+        shell: bash
+        run: |
+          echo "USER: $USER"
+
+          if [[ "$USER" == "dependabot[bot]" ]] || [[ "$USER" == "renovate[bot]" ]]; then
+            echo "✅ from a dependency bot"
+            echo "shouldrun=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Title/label based auto-merge only for branches living in this repository,
+          # never for forks (anyone can title a fork PR "Bump ...")
+          if [[ "$HEAD_REPO" != "JabRef/html-to-node" ]]; then
+            echo "🚫 not from JabRef/html-to-node"
+            echo "shouldrun=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$TITLE" == "Chore(deps): "* ]] || \
+             [[ "$TITLE" == "[Bot] "* ]] || \
+             [[ "$TITLE" == "Bump "* ]] || \
+             [[ "$TITLE" == "Update Gradle Wrapper from"* ]]; then
+            echo "✅ title OK"
+            echo "shouldrun=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LABELS=$(gh api "repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/labels" --jq '.[].name')
+          if echo "$LABELS" | grep -q "^automerge$"; then
+            echo "✅ label automerge"
+            echo "shouldrun=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "🚫 no automerge"
+          echo "shouldrun=false" >> "$GITHUB_OUTPUT"
+      - name: Approve PR
+        if: steps.shouldrun.outputs.shouldrun == 'true'
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+      - name: Merge PR
+        if: steps.shouldrun.outputs.shouldrun == 'true'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
