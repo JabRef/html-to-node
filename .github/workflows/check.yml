@@ -33,6 +33,9 @@ jobs:
       # `build` runs tests headless (no display needed) and the doclint-gated javadoc jar
       - name: Build
         run: ./gradlew build
+      # Tests of the RichTextArea renderer need the JavaFX toolkit
+      - name: GUI tests
+        run: xvfb-run --auto-servernum ./gradlew guiTest
       - name: Upload test reports
         if: failure()
         uses: actions/upload-artifact@v7

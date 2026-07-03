@@ -126,11 +126,13 @@ public final class HtmlRenderOptions {
         return loadRemoteImages;
     }
 
-    double resolvedBaseFontSize() {
+    /// @return the effective base font size: the configured one, or [Font#getDefault()]'s size
+    public double resolvedBaseFontSize() {
         return baseFontSize > 0 ? baseFontSize : Font.getDefault().getSize();
     }
 
-    String resolvedBaseFontFamily() {
+    /// @return the effective base font family: the configured one, or [Font#getDefault()]'s family
+    public String resolvedBaseFontFamily() {
         return baseFontFamily != null ? baseFontFamily : Font.getDefault().getFamily();
     }
 }

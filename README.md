@@ -122,6 +122,28 @@ Unknown elements degrade gracefully — their content is still rendered. `script
 `iframe`, and similar elements are ignored. Scripting, external stylesheets, floats, and
 positioning are out of scope by design.
 
+## The RichTextArea renderer (optional)
+
+Besides the default TextFlow renderer, the same parsed model can be rendered into the JavaFX
+incubator control [RichTextArea](https://openjfx.io/javadoc/26/jfx.incubator.richtext/jfx/incubator/scene/control/richtext/RichTextArea.html)
+for native text selection, caret navigation, and accessibility:
+
+```java
+import org.jabref.htmltonode.rich.RichHtmlView;
+
+RichHtmlView view = new RichHtmlView();   // scrolls itself - no ScrollPane needed
+view.setOptions(options);
+view.setHtml(html);
+view.getRichTextArea().copy();            // native selection/clipboard
+```
+
+This requires the `jfx.incubator.richtext` module (plus `javafx.controls` and
+`jfx.incubator.input`) at runtime — the library declares it `requires static`, so consumers of
+the default renderer are unaffected. Interim gaps of the rich renderer: sub-/superscript lose
+their baseline shift, numeric font weights collapse to bold/normal, and inline images are
+skipped (tables and rules are embedded as node paragraphs). Tests for it run via
+`./gradlew guiTest` (needs a display or `xvfb-run`).
+
 ## Theming
 
 Every rendered node carries CSS style classes (`html-view`, `html-text`, `html-link`,

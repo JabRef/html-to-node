@@ -25,6 +25,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 import org.jabref.htmltonode.internal.HighlightTextFlow;
+import org.jabref.htmltonode.internal.RenderSupport;
 import org.jabref.htmltonode.internal.TextSelection;
 import org.jabref.htmltonode.model.Block;
 import org.jabref.htmltonode.model.CssLength;
@@ -41,8 +42,6 @@ import org.jspecify.annotations.Nullable;
 /// `html-blockquote`, `html-table`, `html-hr`, `html-image`, plus all CSS classes carried
 /// over from the HTML (`csl-entry`, `error`, …).
 public final class FxRenderer {
-
-    private static final double[] HEADING_SCALE = {2.0, 1.5, 1.17, 1.0, 0.83, 0.67};
 
     private final HtmlRenderOptions options;
     private final double baseSize;
@@ -98,7 +97,7 @@ public final class FxRenderer {
                 List<String> classes = new ArrayList<>(cssClasses);
                 classes.add("html-heading");
                 classes.add("html-h" + level);
-                yield renderFlow(inlines, "html-paragraph", classes, HEADING_SCALE[level - 1], 700);
+                yield renderFlow(inlines, "html-paragraph", classes, RenderSupport.headingScale(level), 700);
             }
             case Block.Pre(List<Inline> inlines, List<String> cssClasses) ->
                     renderFlow(inlines, "html-pre", cssClasses, 1.0, 400);
@@ -214,13 +213,13 @@ public final class FxRenderer {
                         effective = effective.withFontWeight(minWeight);
                     }
                     int runStart = charIndex;
-                    for (TextPiece piece : splitForSmallCaps(text, effective)) {
+                    for (RenderSupport.TextPiece piece : RenderSupport.splitForSmallCaps(text, effective)) {
                         Text textNode = createText(piece.text(), effective, piece.sizeFactor());
                         flow.getChildren().add(textNode);
                         charIndex += piece.text().length();
                     }
                     if (effective.background() != null) {
-                        Optional<Color> background = parseColor(effective.background());
+                        Optional<Color> background = RenderSupport.parseColor(effective.background());
                         if (background.isPresent()) {
                             flow.addHighlight(runStart, charIndex, background.get());
                         }
@@ -290,9 +289,9 @@ public final class FxRenderer {
 
         // explicit HTML colors win over stylesheets: set both the property and an inline style
         if (style.color() != null) {
-            parseColor(style.color()).ifPresent(color -> {
+            RenderSupport.parseColor(style.color()).ifPresent(color -> {
                 text.setFill(color);
-                inlineStyle.append(" -fx-fill: ").append(toCssColor(color)).append(";");
+                inlineStyle.append(" -fx-fill: ").append(RenderSupport.toCssColor(color)).append(";");
             });
         }
         text.setStyle(inlineStyle.toString());
@@ -333,54 +332,6 @@ public final class FxRenderer {
             return true;
         }
         return options.loadRemoteImages() && (lower.startsWith("http:") || lower.startsWith("https:"));
-    }
-
-    private record TextPiece(String text, double sizeFactor) {
-    }
-
-    /// Small-caps emulation: lowercase stretches are rendered as smaller capitals.
-    private static List<TextPiece> splitForSmallCaps(String text, InlineStyle style) {
-        if (!style.smallCaps() || text.isEmpty()) {
-            return List.of(new TextPiece(text, 1.0));
-        }
-        List<TextPiece> pieces = new ArrayList<>();
-        StringBuilder current = new StringBuilder();
-        boolean currentLower = Character.isLowerCase(text.charAt(0));
-        for (int i = 0; i < text.length(); i++) {
-            char c = text.charAt(i);
-            boolean lower = Character.isLowerCase(c);
-            if (lower != currentLower) {
-                pieces.add(piece(current, currentLower));
-                current.setLength(0);
-                currentLower = lower;
-            }
-            current.append(c);
-        }
-        pieces.add(piece(current, currentLower));
-        return pieces;
-    }
-
-    private static TextPiece piece(StringBuilder text, boolean lower) {
-        String value = text.toString();
-        return lower
-                ? new TextPiece(value.toUpperCase(Locale.ROOT), 0.8)
-                : new TextPiece(value, 1.0);
-    }
-
-    private static Optional<Color> parseColor(String value) {
-        try {
-            return Optional.of(Color.web(value.trim()));
-        } catch (IllegalArgumentException | NullPointerException e) {
-            return Optional.empty();
-        }
-    }
-
-    private static String toCssColor(Color color) {
-        return String.format(Locale.ROOT, "rgba(%d,%d,%d,%.3f)",
-                (int) Math.round(color.getRed() * 255),
-                (int) Math.round(color.getGreen() * 255),
-                (int) Math.round(color.getBlue() * 255),
-                color.getOpacity());
     }
 
     private static double topMarginEm(Block block) {

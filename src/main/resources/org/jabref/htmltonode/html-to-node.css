@@ -30,3 +30,7 @@
     -fx-fill: -fx-accent;
     -fx-opacity: 0.4;
 }
+
+.html-rich-view {
+    -fx-background-color: transparent;
+}

@@ -15,4 +15,5 @@ module org.jabref.htmltonode {
 
     exports org.jabref.htmltonode;
     exports org.jabref.htmltonode.model;
+    exports org.jabref.htmltonode.rich;
 }
