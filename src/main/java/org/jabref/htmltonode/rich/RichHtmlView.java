@@ -80,6 +80,14 @@ public class RichHtmlView extends StackPane {
         return area;
     }
 
+    /// Sizes the area to its content so that an enclosing pane handles the scrolling —
+    /// by default the area scrolls itself.
+    ///
+    /// @param on whether the area should size to its content
+    public final void setUseContentHeight(boolean on) {
+        area.setUseContentHeight(on);
+    }
+
     /// @return the selected text, joined with line breaks at paragraph boundaries; empty if
     /// nothing is selected
     public final Optional<String> getSelectedText() {
