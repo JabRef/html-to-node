@@ -8,7 +8,7 @@ It was created to replace `WebView` in [JabRef](https://github.com/JabRef/jabref
 that occurs there: user-defined preview layouts, CSL bibliography output produced by
 [citeproc-java](https://github.com/michel-kraemer/citeproc-java), Markdown converted by
 [flexmark-java](https://github.com/vsch/flexmark-java), and JabRef's search-highlight `<mark>`
-markup. The analysis behind this scope and the migration plan are documented in [PLAN.md](PLAN.md).
+markup.
 
 ## Requirements
 
@@ -137,9 +137,10 @@ Replace the `WebView` inside `PreviewViewer` with an `HtmlView` while keeping th
 feed it the `layout.generatePreview(...)` output directly (no `<html><base>` wrapper; pass the
 file directory as `baseUri`), print via `PrinterJob.printPage(node)`, and copy text via
 `toPlainText`. JabRef's `Highlighter.highlightHtml` output (`<mark style="background: orange">`)
-renders as a real highlight. The complete call-site inventory, the `MathSciNetTab` decision
-(embeds a live website; cannot be replaced by this library), and the follow-up cleanup steps are
-listed in [PLAN.md](PLAN.md).
+renders as a real highlight. After the preview migration, the remaining `javafx.web` users in
+JabRef are the AI summary view (can follow the same approach) and `MathSciNetTab`, which embeds
+the live MathSciNet website and therefore needs a product decision (for example, opening the
+page in the external browser instead).
 
 ## Known limitations
 
