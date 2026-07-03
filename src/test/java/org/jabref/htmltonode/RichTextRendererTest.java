@@ -124,6 +124,15 @@ class RichTextRendererTest {
     }
 
     @Test
+    void blockImageBecomesEmbeddedParagraph() {
+        StyledTextModel model = model("<img style=\"display:block; height:12rem;\" src=\"data:image/png;base64,"
+                + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==\"> <br>text");
+
+        assertEquals("text", model.getPlainText(model.size() - 1));
+        assertTrue(model.size() >= 2, "expected an embedded image paragraph before the text");
+    }
+
+    @Test
     void cslEntryRendersAsStyledCitation() {
         StyledTextModel model = model("""
                 <div class="csl-bib-body"><div class="csl-entry">

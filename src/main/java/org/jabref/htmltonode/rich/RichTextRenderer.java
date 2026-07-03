@@ -27,9 +27,9 @@ import org.jspecify.annotations.Nullable;
 /// Inline content maps to styled segments ([StyleAttributeMap]); `<mark>`/background runs map
 /// to native highlights; links carry the custom [#HREF] attribute and are resolved on click via
 /// [RichTextArea#getTextPosition]. Tables and horizontal rules are embedded as node paragraphs
-/// rendered by [FxRenderer]. Known interim gaps (tracked upstream, see the project's issue #2):
-/// sub-/superscript lose their baseline shift, numeric font weights collapse to bold/normal,
-/// and inline images inside a paragraph are skipped.
+/// rendered by [FxRenderer]; images are embedded as inline nodes. Known interim gaps (tracked
+/// upstream, see the project's issue #2): sub-/superscript lose their baseline shift and
+/// numeric font weights collapse to bold/normal.
 public final class RichTextRenderer {
 
     /// Character attribute carrying a link target; resolved on mouse click.
@@ -45,8 +45,8 @@ public final class RichTextRenderer {
 
     /// characters already added to the paragraph currently being built
     private int paragraphOffset;
-    /// whether any paragraph content or attributes were emitted since the last `nl()`
-    private boolean paragraphDirty;
+    /// whether the model's last paragraph is occupied (text, node, or a preserved blank line)
+    private boolean paragraphOccupied;
     /// left indent (in px) applied to paragraphs, e.g. inside `<blockquote>`
     private double indent;
     /// marker text (e.g. `• `, `3. `) to prepend to the next paragraph
@@ -144,18 +144,16 @@ public final class RichTextRenderer {
         }
     }
 
-    /// Embeds blocks as a node paragraph rendered by [FxRenderer] (tables, rules).
+    /// Embeds blocks as a self-contained node paragraph rendered by [FxRenderer] (tables, rules).
     private void embed(List<Block> blocks) {
-        closeParagraph();
+        separateParagraph();
         List<Block> copy = List.copyOf(blocks);
         model.addParagraph(() -> (Region) FxRenderer.render(copy, options));
-        paragraphDirty = true;
-        closeParagraph();
+        paragraphOccupied = true;
     }
 
     private void paragraph(List<Inline> inlines, double scale, int minWeight, double spaceAbove) {
-        closeParagraph();
-        beginParagraph(spaceAbove);
+        startParagraph(spaceAbove);
         for (Inline inline : inlines) {
             switch (inline) {
                 case Inline.TextRun(String text, InlineStyle style) -> {
@@ -166,38 +164,37 @@ public final class RichTextRenderer {
                     if (effective.fontWeight() < minWeight) {
                         effective = effective.withFontWeight(minWeight);
                     }
-                    appendRun(text, effective, spaceAbove);
+                    appendRun(text, effective);
                 }
-                case Inline.LineBreak ignored -> {
-                    closeParagraph();
-                    beginParagraph(0);
-                }
-                case Inline.Image ignored -> {
-                    // Inline images are not supported by the rich renderer yet (Phase 2 / upstream)
+                case Inline.LineBreak ignored ->
+                        startParagraph(0);
+                case Inline.Image image -> {
+                    if (RenderSupport.createImageView(image, options, baseSize) != null) {
+                        model.addNodeSegment(() -> RenderSupport.createImageView(image, options, baseSize));
+                        paragraphOccupied = true;
+                    }
                 }
             }
         }
-        closeParagraph();
     }
 
-    private void appendRun(String text, InlineStyle style, double spaceAbove) {
+    private void appendRun(String text, InlineStyle style) {
         // Hard line breaks inside a run (from `pre`) become separate paragraphs
         String[] lines = text.split("\n", -1);
         for (int i = 0; i < lines.length; i++) {
             if (i > 0) {
-                closeParagraph();
-                beginParagraph(0);
+                startParagraph(0);
             }
             String line = lines[i];
             if (line.isEmpty()) {
-                paragraphDirty = true;
+                paragraphOccupied = true;
                 continue;
             }
             int runStart = paragraphOffset;
             for (RenderSupport.TextPiece piece : RenderSupport.splitForSmallCaps(line, style)) {
                 model.addSegment(piece.text(), attributes(style, piece.sizeFactor()));
                 paragraphOffset += piece.text().length();
-                paragraphDirty = true;
+                paragraphOccupied = true;
             }
             if (style.background() != null) {
                 RenderSupport.parseColor(style.background())
@@ -206,7 +203,9 @@ public final class RichTextRenderer {
         }
     }
 
-    private void beginParagraph(double spaceAbove) {
+    /// Ends the previous paragraph (if occupied) and applies attributes/markers to the new one.
+    private void startParagraph(double spaceAbove) {
+        separateParagraph();
         StyleAttributeMap.Builder paragraphAttributes = StyleAttributeMap.builder();
         boolean hasAttributes = false;
         if (spaceAbove > 0) {
@@ -219,20 +218,20 @@ public final class RichTextRenderer {
         }
         if (hasAttributes) {
             model.setParagraphAttributes(paragraphAttributes.build());
-            paragraphDirty = true;
+            paragraphOccupied = true;
         }
         if (pendingMarker != null) {
             model.addSegment(pendingMarker, attributes(InlineStyle.DEFAULT, 1.0));
             paragraphOffset += pendingMarker.length();
-            paragraphDirty = true;
+            paragraphOccupied = true;
             pendingMarker = null;
         }
     }
 
-    private void closeParagraph() {
-        if (paragraphDirty) {
+    private void separateParagraph() {
+        if (paragraphOccupied) {
             model.nl();
-            paragraphDirty = false;
+            paragraphOccupied = false;
             paragraphOffset = 0;
         }
     }

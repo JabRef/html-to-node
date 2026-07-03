@@ -299,39 +299,7 @@ public final class FxRenderer {
     }
 
     private @Nullable Node renderImage(Inline.Image image) {
-        if (!options.renderImages() || !allowedImageSource(image.source())) {
-            return null;
-        }
-        ImageView view = new ImageView();
-        view.getStyleClass().add("html-image");
-        view.setPreserveRatio(true);
-        view.setSmooth(true);
-        CssLength width = image.width();
-        CssLength height = image.height();
-        if (width != null) {
-            view.setFitWidth(width.toPixels(baseSize));
-        }
-        if (height != null) {
-            view.setFitHeight(height.toPixels(baseSize));
-        }
-        if (width != null && height != null) {
-            view.setPreserveRatio(false);
-        }
-        try {
-            view.setImage(new Image(image.source(), true));
-        } catch (RuntimeException | LinkageError e) {
-            // bad URI, or image subsystem unavailable (e.g. fully headless tests):
-            // keep the sized, empty view
-        }
-        return view;
-    }
-
-    private boolean allowedImageSource(String source) {
-        String lower = source.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("file:") || lower.startsWith("data:") || lower.startsWith("jar:")) {
-            return true;
-        }
-        return options.loadRemoteImages() && (lower.startsWith("http:") || lower.startsWith("https:"));
+        return RenderSupport.createImageView(image, options, baseSize);
     }
 
     private static double topMarginEm(Block block) {

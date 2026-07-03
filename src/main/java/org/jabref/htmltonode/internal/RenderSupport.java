@@ -5,9 +5,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 
+import org.jabref.htmltonode.HtmlRenderOptions;
+import org.jabref.htmltonode.model.CssLength;
+import org.jabref.htmltonode.model.Inline;
 import org.jabref.htmltonode.model.InlineStyle;
+
+import org.jspecify.annotations.Nullable;
 
 /// Rendering helpers shared by the TextFlow-based and the RichTextArea-based renderer.
 public final class RenderSupport {
@@ -61,6 +68,44 @@ public final class RenderSupport {
         } catch (IllegalArgumentException | NullPointerException e) {
             return Optional.empty();
         }
+    }
+
+    /// Creates a sized [ImageView] for an `<img>`, or `null` when images are disabled or the
+    /// source scheme is not allowed (`http(s):` requires [HtmlRenderOptions#loadRemoteImages()]).
+    public static @Nullable ImageView createImageView(Inline.Image image, HtmlRenderOptions options, double baseSize) {
+        if (!options.renderImages() || !allowedImageSource(image.source(), options)) {
+            return null;
+        }
+        ImageView view = new ImageView();
+        view.getStyleClass().add("html-image");
+        view.setPreserveRatio(true);
+        view.setSmooth(true);
+        CssLength width = image.width();
+        CssLength height = image.height();
+        if (width != null) {
+            view.setFitWidth(width.toPixels(baseSize));
+        }
+        if (height != null) {
+            view.setFitHeight(height.toPixels(baseSize));
+        }
+        if (width != null && height != null) {
+            view.setPreserveRatio(false);
+        }
+        try {
+            view.setImage(new Image(image.source(), true));
+        } catch (RuntimeException | LinkageError e) {
+            // bad URI, or image subsystem unavailable (e.g. fully headless tests):
+            // keep the sized, empty view
+        }
+        return view;
+    }
+
+    private static boolean allowedImageSource(String source, HtmlRenderOptions options) {
+        String lower = source.toLowerCase(Locale.ROOT);
+        if (lower.startsWith("file:") || lower.startsWith("data:") || lower.startsWith("jar:")) {
+            return true;
+        }
+        return options.loadRemoteImages() && (lower.startsWith("http:") || lower.startsWith("https:"));
     }
 
     public static String toCssColor(Color color) {
