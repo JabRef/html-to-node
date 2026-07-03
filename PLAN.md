@@ -21,6 +21,7 @@ JabRef checkout: `../jabref` (analyzed at commit `2c9543480d`, 2026-07-03).
 - [x] Plain-text extraction (for JabRef "copy as text")
 - [x] Tests green: `./gradlew build` headless — 84 tests, 0 failures (no display needed)
 - [x] README with usage + JabRef integration notes
+- [x] GitHub setup: `Check` workflow (build+tests+javadoc), dependabot (gradle daily, actions weekly), automerge (JabRef-style guards, `GITHUB_TOKEN`)
 - [ ] (Optional, later) Demo app for manual visual check (needs a display; `demo/` subproject sketched in README)
 - [ ] (Later, in JabRef) Integrate: swap WebView out of `PreviewViewer` behind the existing API
 
