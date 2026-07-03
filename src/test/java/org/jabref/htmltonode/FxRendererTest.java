@@ -69,6 +69,12 @@ class FxRendererTest {
         // texts.get(2) is the collapsed space between </b> and <i>
         assertTrue(texts.get(3).getFont().getStyle().toLowerCase().contains("italic"));
         texts.forEach(text -> assertTrue(text.getStyleClass().contains("html-text")));
+
+        // fonts are pinned via inline CSS so ancestor font styles cannot override them
+        assertTrue(texts.get(0).getStyle().contains("-fx-font-weight: 400"));
+        assertTrue(texts.get(1).getStyle().contains("-fx-font-weight: 700"));
+        assertTrue(texts.get(3).getStyle().contains("-fx-font-style: italic"));
+        assertTrue(texts.get(0).getStyle().contains("-fx-font-size: 12.000px"));
     }
 
     @Test

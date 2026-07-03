@@ -274,13 +274,24 @@ public final class FxRenderer {
             });
         }
 
+        // Pin the font via an inline style as well: JavaFX author stylesheets and inline styles
+        // inherited from ancestors (e.g. an application setting "-fx-font-size" on the scene
+        // root) override Font values set from code on every CSS pass - which would lose bold/
+        // italic or resize the text whenever the node is reparented or focus changes.
+        StringBuilder inlineStyle = new StringBuilder()
+                .append("-fx-font-family: \"").append(family).append("\"; ")
+                .append("-fx-font-size: ").append(String.format(Locale.ROOT, "%.3f", size)).append("px; ")
+                .append("-fx-font-weight: ").append(style.fontWeight()).append("; ")
+                .append("-fx-font-style: ").append(style.italic() ? "italic" : "normal").append(";");
+
         // explicit HTML colors win over stylesheets: set both the property and an inline style
         if (style.color() != null) {
             parseColor(style.color()).ifPresent(color -> {
                 text.setFill(color);
-                text.setStyle("-fx-fill: " + toCssColor(color) + ";");
+                inlineStyle.append(" -fx-fill: ").append(toCssColor(color)).append(";");
             });
         }
+        text.setStyle(inlineStyle.toString());
         return text;
     }
 
