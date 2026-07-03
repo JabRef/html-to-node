@@ -1,6 +1,10 @@
+import com.vanniktech.maven.publish.JavaLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
+
 plugins {
     `java-library`
-    `maven-publish`
+    id("com.vanniktech.maven.publish") version "0.37.0"
 }
 
 group = "org.jabref"
@@ -14,8 +18,6 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
-    withSourcesJar()
-    withJavadocJar()
 }
 
 tasks.withType<JavaCompile>().configureEach {
@@ -64,20 +66,41 @@ tasks.javadoc {
     }
 }
 
-publishing {
-    publications {
-        create<MavenPublication>("maven") {
-            from(components["java"])
-            pom {
-                name = "html-to-node"
-                description = "Renders HTML as plain JavaFX nodes (TextFlow/Text/ImageView) without javafx.web"
-                licenses {
-                    license {
-                        name = "MIT License"
-                        url = "https://opensource.org/licenses/MIT"
-                    }
-                }
+// Same publishing setup as JabRef's jablib: snapshots land on
+// https://central.sonatype.com/repository/maven-snapshots/, which JabRef's build already resolves
+mavenPublishing {
+    configure(JavaLibrary(
+        javadocJar = JavadocJar.Javadoc(),
+        sourcesJar = SourcesJar.Sources(),
+    ))
+
+    publishToMavenCentral()
+    signAllPublications()
+
+    coordinates("org.jabref", "html-to-node", version.toString())
+
+    pom {
+        name = "html-to-node"
+        description = "Renders HTML as plain JavaFX nodes (TextFlow/Text/ImageView) without javafx.web"
+        inceptionYear = "2026"
+        url = "https://github.com/JabRef/html-to-node/"
+        licenses {
+            license {
+                name = "MIT"
+                url = "https://github.com/JabRef/html-to-node/blob/main/LICENSE"
             }
+        }
+        developers {
+            developer {
+                id = "jabref"
+                name = "JabRef Developers"
+                url = "https://github.com/JabRef/"
+            }
+        }
+        scm {
+            url = "https://github.com/JabRef/html-to-node"
+            connection = "scm:git:https://github.com/JabRef/html-to-node"
+            developerConnection = "scm:git:git@github.com:JabRef/html-to-node.git"
         }
     }
 }

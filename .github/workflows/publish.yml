@@ -1,0 +1,48 @@
+name: Publish snapshot to Maven Central
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.repository == 'JabRef/html-to-node'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          show-progress: 'false'
+      - name: Setup JDK
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: corretto
+          check-latest: true
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: Decode secretKeyRingFile
+        id: secring
+        uses: timheuer/base64-to-file@v2
+        with:
+          fileName: 'secring.gpg'
+          encodedString: ${{ secrets.KOPPOR_SIGNING_SECRETKEYRINGFILE_BASE64 }}
+      - name: Store secrets
+        run: |
+          cat >> gradle.properties <<EOF
+          signing.keyId=${{ secrets.KOPPOR_SIGNING_KEYID }}
+          signing.password=${{ secrets.KOPPOR_SIGNING_PASSWORD }}
+          signing.secretKeyRingFile=${{ steps.secring.outputs.filePath }}
+          mavenCentralUsername=${{ secrets.KOPPOR_MAVENCENTRALUSERNAME }}
+          mavenCentralPassword=${{ secrets.KOPPOR_MAVENCENTRALPASSWORD }}
+          EOF
+      - name: Publish snapshot
+        run: ./gradlew publishAllPublicationsToMavenCentralRepository

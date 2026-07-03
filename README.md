@@ -21,8 +21,17 @@ artifacts are platform-specific.
 
 ## Installation
 
-The library is not yet published to a public repository. Install it into the local Maven
-repository:
+Snapshots are published to the
+[Maven Central snapshot repository](https://central.sonatype.com/repository/maven-snapshots/)
+on every push to `main` (no release on Maven Central yet):
+
+```kotlin
+repositories {
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
+}
+```
+
+When developing locally, install into the local Maven repository instead:
 
 ```bash
 ./gradlew publishToMavenLocal
