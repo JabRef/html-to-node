@@ -1,11 +1,14 @@
 package org.jabref.htmltonode;
 
+import java.util.Optional;
+
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.VBox;
 
+import org.jabref.htmltonode.internal.TextSelection;
 import org.jspecify.annotations.Nullable;
 
 /// A small pane that renders an HTML string as JavaFX nodes — the drop-in content for the
@@ -73,6 +76,29 @@ public class HtmlView extends VBox {
     /// @return the plain text; see [HtmlToNode#toPlainText(String)]
     public final String toPlainText() {
         return HtmlToNode.toPlainText(getHtml());
+    }
+
+    /// @return the text currently selected with the mouse, if any
+    public final Optional<String> getSelectedText() {
+        return selection().flatMap(TextSelection::getSelectedText);
+    }
+
+    /// Clears the mouse text selection.
+    public final void clearSelection() {
+        selection().ifPresent(TextSelection::clear);
+    }
+
+    /// @return whether the current mouse press started on an existing selection —
+    /// drag-and-drop consumers should only drag the content in that case, otherwise
+    /// dragging extends the text selection
+    public final boolean isPressOnSelection() {
+        return selection().map(TextSelection::isPressOnSelection).orElse(false);
+    }
+
+    private Optional<TextSelection> selection() {
+        return getChildren().isEmpty()
+                ? Optional.empty()
+                : Optional.ofNullable((TextSelection) getChildren().getFirst().getProperties().get(TextSelection.class));
     }
 
     private void rerender() {

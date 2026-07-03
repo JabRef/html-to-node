@@ -25,3 +25,8 @@
     -fx-border-width: 0 0 0 3;
     -fx-padding: 0 0 0 8;
 }
+
+.html-selection {
+    -fx-fill: -fx-accent;
+    -fx-opacity: 0.4;
+}

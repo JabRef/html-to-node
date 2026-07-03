@@ -25,6 +25,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 import org.jabref.htmltonode.internal.HighlightTextFlow;
+import org.jabref.htmltonode.internal.TextSelection;
 import org.jabref.htmltonode.model.Block;
 import org.jabref.htmltonode.model.CssLength;
 import org.jabref.htmltonode.model.Inline;
@@ -66,6 +67,7 @@ public final class FxRenderer {
         root.getStylesheets().add(HtmlToNode.stylesheet());
         root.setFillWidth(true);
         renderer.appendBlocks(root, blocks);
+        root.getProperties().put(TextSelection.class, new TextSelection(root));
         return root;
     }
 
@@ -269,7 +271,8 @@ public final class FxRenderer {
             text.setFill(Color.web("#0b66c3"));
             String href = style.href();
             text.setOnMouseClicked(event -> {
-                if (event.getButton() == MouseButton.PRIMARY) {
+                // isStillSincePress: a drag that started on the link selects text, it must not navigate
+                if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
                     options.linkHandler().accept(href);
                 }
             });

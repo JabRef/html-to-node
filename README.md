@@ -85,6 +85,9 @@ view.htmlProperty().bind(previewHtmlProperty);
 
 // Plain-text extraction (replacement for WebView's document.body.innerText)
 String text = HtmlToNode.toPlainText(html);
+
+// Text can be selected with the mouse; wire the selection to a copy action
+Optional<String> selected = view.getSelectedText();
 ```
 
 Parsing and rendering are separate phases and can be used independently:
@@ -137,7 +140,7 @@ and take precedence, matching browser behavior.
 ```
 
 The build uses a JDK 25 toolchain (auto-provisioned) and targets Java 24 bytecode. The test
-suite (84 tests) runs headless without a display, Xvfb, or Monocle: since the library never
+suite (91 tests) runs headless without a display, Xvfb, or Monocle: since the library never
 touches `Scene` or `javafx.controls`, `Text`/`TextFlow` layout and font loading work without
 initializing the JavaFX toolkit.
 
@@ -154,8 +157,9 @@ page in the external browser instead).
 
 ## Known limitations
 
-- No text selection yet ("copy all" is supported via plain-text extraction; JabRef's in-tree
-  `SelectableTextFlow` is a candidate basis for selection support).
+- Text selection covers mouse dragging (across blocks) and is retrieved via
+  `HtmlView#getSelectedText()`; keyboard selection and double-click word selection are not
+  implemented.
 - Table support is minimal: no row spans, no borders, no cell alignment attributes.
 - `rem` is treated as `em` (the preview HTML never nests font sizes where this would differ).
 - Remote (`http(s):`) images are disabled by default for privacy; local `file:`/`data:` images
