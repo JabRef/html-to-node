@@ -13,7 +13,9 @@ markup.
 ## Requirements
 
 - Java 24 or later
-- JavaFX 26 or later (`javafx.base` and `javafx.graphics`), provided by the consuming application
+- JavaFX 26 or later, provided by the consuming application: `javafx.base`, `javafx.graphics`,
+  and — for the RichTextArea renderer — `javafx.controls`, `jfx.incubator.input`, and
+  `jfx.incubator.richtext`
 
 The library is a JPMS module (`org.jabref.htmltonode`) and is null-marked with
 [JSpecify](https://jspecify.dev/) annotations. Its runtime dependencies are
@@ -137,9 +139,8 @@ view.setHtml(html);
 view.getRichTextArea().copy();            // native selection/clipboard
 ```
 
-This requires the `jfx.incubator.richtext` module (plus `javafx.controls` and
-`jfx.incubator.input`) at runtime — the library declares it `requires static`, so consumers of
-the default renderer are unaffected. Interim gaps of the rich renderer: sub-/superscript lose
+The module requires `jfx.incubator.richtext` (which brings `javafx.controls` and
+`jfx.incubator.input`). Interim gaps of the rich renderer: sub-/superscript lose
 their baseline shift, numeric font weights collapse to bold/normal, and inline images are
 skipped (tables and rules are embedded as node paragraphs). Tests for it run via
 `./gradlew guiTest` (needs a display or `xvfb-run`).

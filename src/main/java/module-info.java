@@ -10,8 +10,7 @@ module org.jabref.htmltonode {
     requires transitive org.jspecify;
     requires org.jsoup;
 
-    // Only needed by the optional RichTextArea-based renderer
-    requires static jfx.incubator.richtext;
+    requires transitive jfx.incubator.richtext;
 
     exports org.jabref.htmltonode;
     exports org.jabref.htmltonode.model;

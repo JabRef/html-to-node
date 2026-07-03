@@ -1,16 +1,21 @@
 package org.jabref.htmltonode.rich;
 
+import java.util.Optional;
+
 import javafx.beans.property.ObjectProperty;
-import javafx.geometry.Pos;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.geometry.Pos;
 import javafx.scene.layout.StackPane;
 
 import org.jabref.htmltonode.HtmlRenderOptions;
 import org.jabref.htmltonode.HtmlToNode;
 
 import jfx.incubator.scene.control.richtext.RichTextArea;
+import jfx.incubator.scene.control.richtext.SelectionSegment;
+import jfx.incubator.scene.control.richtext.TextPos;
+import jfx.incubator.scene.control.richtext.model.StyledTextModel;
 import org.jspecify.annotations.Nullable;
 
 /// A pane rendering an HTML string into a read-only [RichTextArea] — like
@@ -73,6 +78,44 @@ public class RichHtmlView extends StackPane {
     /// @return the backing control, e.g. for copy actions, printing, or selection access
     public final RichTextArea getRichTextArea() {
         return area;
+    }
+
+    /// @return the selected text, joined with line breaks at paragraph boundaries; empty if
+    /// nothing is selected
+    public final Optional<String> getSelectedText() {
+        SelectionSegment selection = area.getSelection();
+        if ((selection == null) || selection.isCollapsed()) {
+            return Optional.empty();
+        }
+        StyledTextModel model = area.getModel();
+        TextPos min = selection.getMin();
+        TextPos max = selection.getMax();
+        StringBuilder result = new StringBuilder();
+        for (int i = min.index(); i <= max.index(); i++) {
+            String paragraph = model.getPlainText(i);
+            int from = (i == min.index()) ? Math.min(min.offset(), paragraph.length()) : 0;
+            int to = (i == max.index()) ? Math.min(max.offset(), paragraph.length()) : paragraph.length();
+            if (i > min.index()) {
+                result.append('\n');
+            }
+            result.append(paragraph, from, Math.max(from, to));
+        }
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.toString());
+    }
+
+    /// @param screenX the horizontal screen coordinate of a mouse press
+    /// @param screenY the vertical screen coordinate of a mouse press
+    /// @return whether the given position lies on the current text selection — only then a
+    /// drag gesture should drag the selected content instead of extending the selection
+    public final boolean isPressOnSelection(double screenX, double screenY) {
+        SelectionSegment selection = area.getSelection();
+        if ((selection == null) || selection.isCollapsed()) {
+            return false;
+        }
+        TextPos position = area.getTextPosition(screenX, screenY);
+        return (position != null)
+                && (selection.getMin().compareTo(position) <= 0)
+                && (position.compareTo(selection.getMax()) <= 0);
     }
 
     /// Extracts readable plain text from the current content, e.g. for "copy as text".

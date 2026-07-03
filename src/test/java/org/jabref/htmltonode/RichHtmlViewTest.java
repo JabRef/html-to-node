@@ -33,6 +33,37 @@ class RichHtmlViewTest {
     }
 
     @Test
+    void selectionFacadeReturnsSelectedText() throws Exception {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        AtomicReference<java.util.Optional<String>> before = new AtomicReference<>();
+        AtomicReference<java.util.Optional<String>> after = new AtomicReference<>();
+        CountDownLatch done = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            try {
+                RichHtmlView view = new RichHtmlView();
+                view.setHtml("<p>First entry</p><p>Second one</p>");
+                new Scene(view, 400, 300);
+                view.applyCss();
+                before.set(view.getSelectedText());
+                view.getRichTextArea().selectAll();
+                after.set(view.getSelectedText());
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                done.countDown();
+            }
+        });
+
+        assertTrue(done.await(15, TimeUnit.SECONDS), "FX task timed out");
+        if (error.get() != null) {
+            throw new AssertionError("FX task failed", error.get());
+        }
+        assertEquals(java.util.Optional.empty(), before.get());
+        assertEquals(java.util.Optional.of("First entry\nSecond one"), after.get());
+    }
+
+    @Test
     void viewRendersHtmlIntoRichTextArea() throws Exception {
         AtomicReference<Throwable> error = new AtomicReference<>();
         AtomicReference<String> firstParagraph = new AtomicReference<>();
