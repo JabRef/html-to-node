@@ -1,6 +1,7 @@
 package org.jabref.htmltonode.rich;
 
 import javafx.beans.property.ObjectProperty;
+import javafx.geometry.Pos;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -27,6 +28,7 @@ public class RichHtmlView extends StackPane {
 
     /// Creates an empty view with [HtmlRenderOptions#defaults()].
     public RichHtmlView() {
+        setAlignment(Pos.TOP_LEFT);
         getStylesheets().add(HtmlToNode.stylesheet());
         getChildren().add(area);
         html.addListener((observable, oldValue, newValue) -> rerender());
