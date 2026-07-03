@@ -44,9 +44,16 @@ dependencies {
 
     compileOnly("org.openjfx:javafx-base:$javafxVersion:$jfxPlatform")
     compileOnly("org.openjfx:javafx-graphics:$javafxVersion:$jfxPlatform")
+    // Only for the optional RichTextArea renderer (module-info: requires static)
+    compileOnly("org.openjfx:javafx-controls:$javafxVersion:$jfxPlatform")
+    compileOnly("org.openjfx:jfx-incubator-input:$javafxVersion:$jfxPlatform")
+    compileOnly("org.openjfx:jfx-incubator-richtext:$javafxVersion:$jfxPlatform")
 
     testImplementation("org.openjfx:javafx-base:$javafxVersion:$jfxPlatform")
     testImplementation("org.openjfx:javafx-graphics:$javafxVersion:$jfxPlatform")
+    testImplementation("org.openjfx:javafx-controls:$javafxVersion:$jfxPlatform")
+    testImplementation("org.openjfx:jfx-incubator-input:$javafxVersion:$jfxPlatform")
+    testImplementation("org.openjfx:jfx-incubator-richtext:$javafxVersion:$jfxPlatform")
 
     testImplementation(platform("org.junit:junit-bom:6.1.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -112,10 +119,30 @@ tasks.compileTestJava {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeTags("gui")
+    }
     modularity.inferModulePath = false
     systemProperty("java.awt.headless", "true")
     // JavaFX loads its native font/graphics libraries from the classpath
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
+    testLogging {
+        events("failed", "skipped")
+        showStackTraces = true
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
+// Tests of the RichTextArea renderer need the JavaFX toolkit: a display or xvfb-run
+val guiTest by tasks.registering(Test::class) {
+    description = "Runs tests requiring the JavaFX toolkit (tag 'gui'); needs a display or xvfb-run"
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform {
+        includeTags("gui")
+    }
+    modularity.inferModulePath = false
     jvmArgs("--enable-native-access=ALL-UNNAMED")
     testLogging {
         events("failed", "skipped")
