@@ -8,6 +8,8 @@ import java.util.Optional;
 import org.jabref.htmltonode.model.CssLength;
 import org.jabref.htmltonode.model.InlineStyle;
 
+import org.jspecify.annotations.Nullable;
+
 /// Applies the subset of inline CSS (`style="…"` attributes) that occurs in JabRef preview HTML:
 /// citeproc-java spans (`font-style`, `font-variant`, `font-weight`, `text-decoration`),
 /// the search highlighter's `background`, cover-image sizing, and the AI raw template's
@@ -17,7 +19,7 @@ public final class CssStyleParser {
     private CssStyleParser() {
     }
 
-    public static InlineStyle apply(InlineStyle style, String styleAttribute) {
+    public static InlineStyle apply(InlineStyle style, @Nullable String styleAttribute) {
         if (styleAttribute == null || styleAttribute.isBlank()) {
             return style;
         }
@@ -48,7 +50,7 @@ public final class CssStyleParser {
         return result;
     }
 
-    public static WhiteSpaceMode whiteSpace(String styleAttribute, WhiteSpaceMode current) {
+    public static WhiteSpaceMode whiteSpace(@Nullable String styleAttribute, WhiteSpaceMode current) {
         if (styleAttribute == null || styleAttribute.isBlank()) {
             return current;
         }
@@ -63,7 +65,7 @@ public final class CssStyleParser {
         };
     }
 
-    public static boolean isDisplayBlock(String styleAttribute) {
+    public static boolean isDisplayBlock(@Nullable String styleAttribute) {
         if (styleAttribute == null || styleAttribute.isBlank()) {
             return false;
         }
@@ -71,7 +73,7 @@ public final class CssStyleParser {
     }
 
     /// Length of `property` (e.g. `height`) in a style attribute, if present and parseable.
-    public static Optional<CssLength> length(String styleAttribute, String property) {
+    public static Optional<CssLength> length(@Nullable String styleAttribute, String property) {
         if (styleAttribute == null || styleAttribute.isBlank()) {
             return Optional.empty();
         }

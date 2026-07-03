@@ -1,5 +1,7 @@
 package org.jabref.htmltonode.model;
 
+import org.jspecify.annotations.Nullable;
+
 /// Resolved (absolute) styling of an inline run.
 ///
 /// Parsers resolve inheritance and resets while walking the DOM (e.g. `<span style="font-style: normal">`
@@ -27,10 +29,10 @@ public record InlineStyle(
         boolean monospace,
         VerticalPosition verticalPosition,
         double fontScale,
-        String fontFamily,
-        String color,
-        String background,
-        String href) {
+        @Nullable String fontFamily,
+        @Nullable String color,
+        @Nullable String background,
+        @Nullable String href) {
 
     /// Vertical placement of a run relative to the baseline.
     public enum VerticalPosition {
@@ -88,19 +90,19 @@ public record InlineStyle(
         return new InlineStyle(fontWeight, italic, underline, strikethrough, smallCaps, monospace, verticalPosition, newFontScale, fontFamily, color, background, href);
     }
 
-    public InlineStyle withFontFamily(String newFontFamily) {
+    public InlineStyle withFontFamily(@Nullable String newFontFamily) {
         return new InlineStyle(fontWeight, italic, underline, strikethrough, smallCaps, monospace, verticalPosition, fontScale, newFontFamily, color, background, href);
     }
 
-    public InlineStyle withColor(String newColor) {
+    public InlineStyle withColor(@Nullable String newColor) {
         return new InlineStyle(fontWeight, italic, underline, strikethrough, smallCaps, monospace, verticalPosition, fontScale, fontFamily, newColor, background, href);
     }
 
-    public InlineStyle withBackground(String newBackground) {
+    public InlineStyle withBackground(@Nullable String newBackground) {
         return new InlineStyle(fontWeight, italic, underline, strikethrough, smallCaps, monospace, verticalPosition, fontScale, fontFamily, color, newBackground, href);
     }
 
-    public InlineStyle withHref(String newHref) {
+    public InlineStyle withHref(@Nullable String newHref) {
         return new InlineStyle(fontWeight, italic, underline, strikethrough, smallCaps, monospace, verticalPosition, fontScale, fontFamily, color, background, newHref);
     }
 }

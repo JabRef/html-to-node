@@ -15,9 +15,10 @@ markup.
 - Java 24 or later
 - JavaFX 26 or later (`javafx.base` and `javafx.graphics`), provided by the consuming application
 
-The library is a JPMS module (`org.jabref.htmltonode`). Its only runtime dependency is
-[jsoup](https://jsoup.org/); JavaFX is intentionally not declared in the POM because OpenJFX
-artifacts are platform-specific.
+The library is a JPMS module (`org.jabref.htmltonode`) and is null-marked with
+[JSpecify](https://jspecify.dev/) annotations. Its runtime dependencies are
+[jsoup](https://jsoup.org/) and the JSpecify annotations; JavaFX is intentionally not declared
+in the POM because OpenJFX artifacts are platform-specific.
 
 ## Installation
 

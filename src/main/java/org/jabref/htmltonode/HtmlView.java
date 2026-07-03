@@ -6,6 +6,8 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.scene.layout.VBox;
 
+import org.jspecify.annotations.Nullable;
+
 /// A small pane that renders an HTML string as JavaFX nodes — the drop-in content for the
 /// `ScrollPane` that JabRef's `PreviewViewer` already is (instead of a `WebView`).
 ///
@@ -27,7 +29,7 @@ public class HtmlView extends VBox {
     /// Creates a view showing `html` with [HtmlRenderOptions#defaults()].
     ///
     /// @param html the initial HTML content; `null` is treated as empty
-    public HtmlView(String html) {
+    public HtmlView(@Nullable String html) {
         this();
         setHtml(html);
     }
@@ -45,7 +47,7 @@ public class HtmlView extends VBox {
     }
 
     /// @param newHtml the HTML content to render; `null` is treated as empty
-    public final void setHtml(String newHtml) {
+    public final void setHtml(@Nullable String newHtml) {
         html.set(newHtml == null ? "" : newHtml);
     }
 
@@ -62,7 +64,7 @@ public class HtmlView extends VBox {
     }
 
     /// @param newOptions the rendering options; `null` restores [HtmlRenderOptions#defaults()]
-    public final void setOptions(HtmlRenderOptions newOptions) {
+    public final void setOptions(@Nullable HtmlRenderOptions newOptions) {
         options.set(newOptions == null ? HtmlRenderOptions.defaults() : newOptions);
     }
 

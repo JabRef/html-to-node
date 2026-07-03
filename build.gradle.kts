@@ -39,6 +39,7 @@ val jfxPlatform = run {
 }
 
 dependencies {
+    api("org.jspecify:jspecify:1.0.0")
     implementation("org.jsoup:jsoup:1.22.2")
 
     compileOnly("org.openjfx:javafx-base:$javafxVersion:$jfxPlatform")

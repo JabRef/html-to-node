@@ -8,6 +8,7 @@ import javafx.scene.layout.Region;
 import org.jabref.htmltonode.internal.HtmlToModel;
 import org.jabref.htmltonode.internal.PlainText;
 import org.jabref.htmltonode.model.Block;
+import org.jspecify.annotations.Nullable;
 
 /// Entry point: converts HTML (the subset produced for JabRef's entry preview — citeproc-java
 /// CSL output, JabRef preview layouts, flexmark markdown, `<mark>` search highlights) into
@@ -37,7 +38,7 @@ public final class HtmlToNode {
     /// @param html    the HTML to parse
     /// @param baseUri the URI to resolve relative `href`/`src` values against, or `null` for none
     /// @return the parsed blocks, in document order; empty for blank input, never `null`
-    public static List<Block> parse(String html, String baseUri) {
+    public static List<Block> parse(String html, @Nullable String baseUri) {
         return HtmlToModel.parse(html, baseUri);
     }
 

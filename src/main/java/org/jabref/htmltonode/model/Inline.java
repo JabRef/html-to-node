@@ -1,5 +1,7 @@
 package org.jabref.htmltonode.model;
 
+import org.jspecify.annotations.Nullable;
+
 /// Inline-level content of a paragraph-like block.
 public sealed interface Inline {
 
@@ -19,6 +21,6 @@ public sealed interface Inline {
     /// @param height     requested height, or `null` if unset
     /// @param blockImage `display: block` — rendered on a line of its own
     /// @param alt        alternative text, or `null`
-    record Image(String source, CssLength width, CssLength height, boolean blockImage, String alt) implements Inline {
+    record Image(String source, @Nullable CssLength width, @Nullable CssLength height, boolean blockImage, @Nullable String alt) implements Inline {
     }
 }

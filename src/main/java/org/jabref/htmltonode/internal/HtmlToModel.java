@@ -14,6 +14,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.nodes.TextNode;
+import org.jspecify.annotations.Nullable;
 
 /// Parses HTML into the block/inline model. Uses jsoup, so malformed markup, entities and
 /// `<base href>` behave like in a browser. Unknown tags degrade gracefully: unknown inline
@@ -26,8 +27,8 @@ public final class HtmlToModel {
     private HtmlToModel() {
     }
 
-    public static List<Block> parse(String html, String baseUri) {
-        Document document = Jsoup.parse(html == null ? "" : html, baseUri == null ? "" : baseUri);
+    public static List<Block> parse(String html, @Nullable String baseUri) {
+        Document document = Jsoup.parse(html, baseUri == null ? "" : baseUri);
         BlockCollector root = new BlockCollector(false);
         walkChildren(document.body(), InlineStyle.DEFAULT, WhiteSpaceMode.NORMAL, root);
         return root.finish();

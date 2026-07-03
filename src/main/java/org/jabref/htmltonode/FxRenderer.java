@@ -29,6 +29,7 @@ import org.jabref.htmltonode.model.Block;
 import org.jabref.htmltonode.model.CssLength;
 import org.jabref.htmltonode.model.Inline;
 import org.jabref.htmltonode.model.InlineStyle;
+import org.jspecify.annotations.Nullable;
 
 /// Renders the block model into plain JavaFX nodes: paragraphs become [TextFlow]s in a [VBox],
 /// links become styled, clickable [Text] runs (they wrap mid-link like in a browser — no
@@ -295,7 +296,7 @@ public final class FxRenderer {
         return text;
     }
 
-    private Node renderImage(Inline.Image image) {
+    private @Nullable Node renderImage(Inline.Image image) {
         if (!options.renderImages() || !allowedImageSource(image.source())) {
             return null;
         }

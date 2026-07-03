@@ -1,9 +1,10 @@
 package org.jabref.htmltonode;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 
 import javafx.scene.text.Font;
+
+import org.jspecify.annotations.Nullable;
 
 /// Rendering options. Immutable; start from [#defaults()] and refine via `with…` methods:
 ///
@@ -15,18 +16,18 @@ import javafx.scene.text.Font;
 public final class HtmlRenderOptions {
 
     private final double baseFontSize;
-    private final String baseFontFamily;
+    private final @Nullable String baseFontFamily;
     private final String monospaceFontFamily;
     private final Consumer<String> linkHandler;
-    private final String baseUri;
+    private final @Nullable String baseUri;
     private final boolean renderImages;
     private final boolean loadRemoteImages;
 
     private HtmlRenderOptions(double baseFontSize,
-                              String baseFontFamily,
+                              @Nullable String baseFontFamily,
                               String monospaceFontFamily,
                               Consumer<String> linkHandler,
-                              String baseUri,
+                              @Nullable String baseUri,
                               boolean renderImages,
                               boolean loadRemoteImages) {
         this.baseFontSize = baseFontSize;
@@ -53,24 +54,31 @@ public final class HtmlRenderOptions {
     }
 
     /// Font family for regular text; unset means [Font#getDefault()]'s family.
-    public HtmlRenderOptions withBaseFontFamily(String newBaseFontFamily) {
+    public HtmlRenderOptions withBaseFontFamily(@Nullable String newBaseFontFamily) {
         return new HtmlRenderOptions(baseFontSize, newBaseFontFamily, monospaceFontFamily, linkHandler, baseUri, renderImages, loadRemoteImages);
     }
 
     /// Font family for `code`/`pre` content. Default: `"Monospaced"` (JavaFX logical font).
     public HtmlRenderOptions withMonospaceFontFamily(String newMonospaceFontFamily) {
-        return new HtmlRenderOptions(baseFontSize, baseFontFamily, Objects.requireNonNull(newMonospaceFontFamily), linkHandler, baseUri, renderImages, loadRemoteImages);
+        return new HtmlRenderOptions(baseFontSize, baseFontFamily, newMonospaceFontFamily, linkHandler, baseUri, renderImages, loadRemoteImages);
     }
 
     /// Invoked with the (resolved) `href` when a link is clicked. Default: no-op.
     public HtmlRenderOptions withLinkHandler(Consumer<String> newLinkHandler) {
-        return new HtmlRenderOptions(baseFontSize, baseFontFamily, monospaceFontFamily, Objects.requireNonNull(newLinkHandler), baseUri, renderImages, loadRemoteImages);
+        return new HtmlRenderOptions(baseFontSize, baseFontFamily, monospaceFontFamily, newLinkHandler, baseUri, renderImages, loadRemoteImages);
     }
 
     /// Base URI against which relative `href`/`src` values are resolved
     /// (replacement for the `<base href>` JabRef injects for WebView today).
+    ///
+    /// @param newBaseUri the base URI; use [#withoutBaseUri()] to express absence
     public HtmlRenderOptions withBaseUri(String newBaseUri) {
         return new HtmlRenderOptions(baseFontSize, baseFontFamily, monospaceFontFamily, linkHandler, newBaseUri, renderImages, loadRemoteImages);
+    }
+
+    /// Leaves relative `href`/`src` values unresolved (the default).
+    public HtmlRenderOptions withoutBaseUri() {
+        return new HtmlRenderOptions(baseFontSize, baseFontFamily, monospaceFontFamily, linkHandler, null, renderImages, loadRemoteImages);
     }
 
     /// Disable to skip `<img>` entirely (useful in tests and tooltips).
@@ -89,7 +97,7 @@ public final class HtmlRenderOptions {
     }
 
     /// @return the configured base font family, or `null` if unset
-    public String baseFontFamily() {
+    public @Nullable String baseFontFamily() {
         return baseFontFamily;
     }
 
@@ -104,7 +112,7 @@ public final class HtmlRenderOptions {
     }
 
     /// @return the base URI for resolving relative URLs, or `null` if unset
-    public String baseUri() {
+    public @Nullable String baseUri() {
         return baseUri;
     }
 

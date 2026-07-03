@@ -337,9 +337,8 @@ class HtmlToModelTest {
     }
 
     @Test
-    void emptyAndNullInput() {
+    void emptyAndBlankInput() {
         assertTrue(parse("").isEmpty());
-        assertTrue(parse(null).isEmpty());
         assertTrue(parse("   \n  ").isEmpty());
     }
 
