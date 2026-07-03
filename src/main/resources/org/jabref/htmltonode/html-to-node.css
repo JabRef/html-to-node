@@ -1,0 +1,27 @@
+/*
+ * Default styling for html-to-node output. Uses modena looked-up colors
+ * (-fx-text-background-color, -fx-accent), so dark themes that redefine them
+ * on .root restyle the rendered HTML automatically — no WebEngine CSS injection needed.
+ */
+
+.html-view {
+    -fx-padding: 8;
+}
+
+.html-text {
+    -fx-fill: -fx-text-background-color;
+}
+
+.html-link {
+    -fx-fill: -fx-accent;
+}
+
+.html-hr {
+    -fx-background-color: derive(-fx-text-background-color, 60%);
+}
+
+.html-blockquote {
+    -fx-border-color: transparent transparent transparent derive(-fx-text-background-color, 60%);
+    -fx-border-width: 0 0 0 3;
+    -fx-padding: 0 0 0 8;
+}
