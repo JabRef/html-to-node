@@ -166,8 +166,14 @@ public final class RichTextRenderer {
                     }
                     appendRun(text, effective);
                 }
-                case Inline.LineBreak ignored ->
-                        startParagraph(0);
+                case Inline.LineBreak ignored -> {
+                    // A break renders as a blank line even with no content of its own, so a second
+                    // consecutive break (e.g. `<br><br>`) still triggers a fresh model.nl() in the next
+                    // startParagraph() call instead of being swallowed by separateParagraph()'s
+                    // occupied-check (mirrors the empty-line handling for preserved "\n\n" in appendRun).
+                    startParagraph(0);
+                    paragraphOccupied = true;
+                }
                 case Inline.Image image -> {
                     if (RenderSupport.createImageView(image, options, baseSize) != null) {
                         model.addNodeSegment(() -> RenderSupport.createImageView(image, options, baseSize));

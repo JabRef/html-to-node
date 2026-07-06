@@ -82,6 +82,16 @@ class RichTextRendererTest {
     }
 
     @Test
+    void consecutiveLineBreaksKeepTheBlankLineBetweenThem() {
+        StyledTextModel model = model("a<br><br>b");
+
+        assertEquals(3, model.size());
+        assertEquals("a", model.getPlainText(0));
+        assertEquals("", model.getPlainText(1));
+        assertEquals("b", model.getPlainText(2));
+    }
+
+    @Test
     void preservedNewlinesInPreSplitParagraphs() {
         StyledTextModel model = model("<pre>x = 1\ny = 2</pre>");
 
