@@ -143,6 +143,27 @@ class RichTextRendererTest {
     }
 
     @Test
+    void hrefAtImagePositionIsNullAndDoesNotThrow() {
+        // Clicking a book-cover / inline image resolves to a node segment, for which the model
+        // returns a null attribute map. hrefAt must tolerate that (regression for an NPE that
+        // dereferenced getStyleAttributeMap(...) on image clicks); offset 1 is the image node.
+        StyledTextModel model = model("a<img src=\"data:image/png;base64,"
+                + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==\">b");
+
+        assertEquals("a b", model.getPlainText(0));
+        assertNull(attributesAt(model, 0, 1), "image node segment carries no character attribute map");
+        assertNull(RichTextRenderer.hrefAt(model, TextPos.ofLeading(0, 1)));
+    }
+
+    @Test
+    void hrefAtLinkPositionReturnsTarget() {
+        StyledTextModel model = model("see <a href=\"https://doi.org/10.1/x\">10.1/x</a>");
+
+        assertEquals("https://doi.org/10.1/x", RichTextRenderer.hrefAt(model, TextPos.ofLeading(0, 5)));
+        assertNull(RichTextRenderer.hrefAt(model, TextPos.ofLeading(0, 1)));
+    }
+
+    @Test
     void cslEntryRendersAsStyledCitation() {
         StyledTextModel model = model("""
                 <div class="csl-bib-body"><div class="csl-entry">
