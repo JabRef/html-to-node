@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 /// JavaFX application thread. Requires the `jfx.incubator.richtext` module at runtime.
 public class RichHtmlView extends StackPane {
 
-    private final RichTextArea area = new RichTextArea();
+    private final RichTextArea area = new HtmlRichTextArea();
     private final StringProperty html = new SimpleStringProperty(this, "html", "");
     private final ObjectProperty<HtmlRenderOptions> options =
             new SimpleObjectProperty<>(this, "options", HtmlRenderOptions.defaults());
