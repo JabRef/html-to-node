@@ -79,7 +79,7 @@ public final class RichTextRenderer {
     /// @param options rendering options
     /// @return the configured control
     public static RichTextArea render(List<Block> blocks, HtmlRenderOptions options) {
-        RichTextArea area = new RichTextArea(buildModel(blocks, options));
+        RichTextArea area = new HtmlRichTextArea(buildModel(blocks, options));
         configure(area, options);
         return area;
     }
