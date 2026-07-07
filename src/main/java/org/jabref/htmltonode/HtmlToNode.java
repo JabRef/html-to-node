@@ -6,6 +6,7 @@ import java.util.Objects;
 import javafx.scene.layout.Region;
 
 import org.jabref.htmltonode.internal.HtmlToModel;
+import org.jabref.htmltonode.internal.MathSegmenter;
 import org.jabref.htmltonode.internal.PlainText;
 import org.jabref.htmltonode.model.Block;
 import org.jspecify.annotations.Nullable;
@@ -42,6 +43,18 @@ public final class HtmlToNode {
         return HtmlToModel.parse(html, baseUri);
     }
 
+    /// Parses HTML, applying the parse-affecting options: relative URLs are resolved against
+    /// [HtmlRenderOptions#baseUri()], and with [HtmlRenderOptions#renderMath()] TeX math spans
+    /// are recognized in text content (as [org.jabref.htmltonode.model.Inline.Math]).
+    ///
+    /// @param html    the HTML to parse
+    /// @param options the options; also pass them to the renderer
+    /// @return the parsed blocks, in document order; empty for blank input, never `null`
+    public static List<Block> parse(String html, HtmlRenderOptions options) {
+        List<Block> blocks = HtmlToModel.parse(html, options.baseUri());
+        return options.renderMath() ? MathSegmenter.apply(blocks) : blocks;
+    }
+
     /// Parses and renders HTML with [HtmlRenderOptions#defaults()].
     ///
     /// @param html the HTML to render
@@ -57,7 +70,7 @@ public final class HtmlToNode {
     /// @param options rendering options
     /// @return the rendered content, ready to be placed in a `ScrollPane` or any other parent
     public static Region render(String html, HtmlRenderOptions options) {
-        return FxRenderer.render(parse(html, options.baseUri()), options);
+        return FxRenderer.render(parse(html, options), options);
     }
 
     /// Renders an already parsed block model, e.g. to render the result of [#parse(String)]
@@ -76,7 +89,7 @@ public final class HtmlToNode {
     /// @param html the HTML to convert
     /// @return the text content with paragraph breaks, list markers and tab-separated table cells
     public static String toPlainText(String html) {
-        return PlainText.of(parse(html, null));
+        return PlainText.of(parse(html));
     }
 
     /// Extracts readable plain text from an already parsed block model.

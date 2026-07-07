@@ -25,6 +25,7 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 
 import org.jabref.htmltonode.internal.HighlightTextFlow;
+import org.jabref.htmltonode.internal.MathRendering;
 import org.jabref.htmltonode.internal.RenderSupport;
 import org.jabref.htmltonode.internal.TextSelection;
 import org.jabref.htmltonode.model.Block;
@@ -236,6 +237,17 @@ public final class FxRenderer {
                     if (imageNode != null) {
                         flow.getChildren().add(imageNode);
                         charIndex += 1;
+                    }
+                }
+                case Inline.Math math -> {
+                    Node mathNode = MathRendering.createMathNode(math, baseSize * math.style().fontScale() * scale);
+                    if (mathNode != null) {
+                        flow.getChildren().add(mathNode);
+                        charIndex += 1;
+                    } else {
+                        Text fallback = createText(math.source(), math.style(), 1.0);
+                        flow.getChildren().add(fallback);
+                        charIndex += math.source().length();
                     }
                 }
             }

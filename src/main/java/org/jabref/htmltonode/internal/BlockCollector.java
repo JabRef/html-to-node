@@ -86,6 +86,7 @@ final class BlockCollector {
             boolean hasContent = inlines.stream().anyMatch(inline -> switch (inline) {
                 case Inline.TextRun(String text, InlineStyle ignored) -> !text.isBlank();
                 case Inline.Image ignored -> true;
+                case Inline.Math ignored -> true;
                 case Inline.LineBreak ignored -> false;
             });
             if (!hasContent) {

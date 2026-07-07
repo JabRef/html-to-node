@@ -5,6 +5,8 @@ import com.vanniktech.maven.publish.SourcesJar
 plugins {
     `java-library`
     id("com.vanniktech.maven.publish") version "0.37.0"
+    // Turns legacy non-modular jars (JLaTeXMath) into proper JPMS modules, matching JabRef's own build
+    id("org.gradlex.extra-java-module-info") version "1.14.2"
 }
 
 group = "org.jabref"
@@ -41,6 +43,8 @@ val jfxPlatform = run {
 dependencies {
     api("org.jspecify:jspecify:1.0.0")
     implementation("org.jsoup:jsoup:1.22.2")
+    // TeX math rendering; GPL 2.0 with the linking ("Classpath") exception, like OpenJFX
+    implementation("org.scilab.forge:jlatexmath:1.0.7")
 
     compileOnly("org.openjfx:javafx-base:$javafxVersion:$jfxPlatform")
     compileOnly("org.openjfx:javafx-graphics:$javafxVersion:$jfxPlatform")
@@ -58,6 +62,22 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:6.1.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+// JLaTeXMath 1.0.7 ships no module descriptor, and its optional Greek/Cyrillic fonts sit in
+// companion resource-only jars, so Gradle leaves it on the classpath and `requires jlatexmath`
+// fails to resolve. Promote it to a single proper module (fonts merged in so their .ttf resources
+// resolve within the module) named `jlatexmath`, exporting its packages and reading the JDK
+// modules jdeps reports it uses (java.desktop for Java2D, java.xml for its font-metric config).
+extraJavaModuleInfo {
+    failOnMissingModuleInfo = false
+    module("org.scilab.forge:jlatexmath", "jlatexmath") {
+        requires("java.desktop")
+        requires("java.xml")
+        exportAllPackages()
+        mergeJar("org.scilab.forge:jlatexmath-font-greek")
+        mergeJar("org.scilab.forge:jlatexmath-font-cyrillic")
+    }
 }
 
 tasks.javadoc {
