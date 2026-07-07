@@ -110,7 +110,7 @@ class HtmlToModelTest {
     @Test
     void baseHrefInsideDocumentWins() {
         List<Block> blocks = HtmlToNode.parse(
-                "<html><head><base href=\"file:///data/dir/\"></head><body><a href=\"x.pdf\">x</a></body></html>", null);
+                "<html><head><base href=\"file:///data/dir/\"></head><body><a href=\"x.pdf\">x</a></body></html>", (String) null);
         Block.Paragraph paragraph = assertInstanceOf(Block.Paragraph.class, blocks.getFirst());
         assertEquals("file:/data/dir/x.pdf", run(paragraph, 0).style().href());
     }

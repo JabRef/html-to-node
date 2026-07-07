@@ -23,4 +23,15 @@ public sealed interface Inline {
     /// @param alt        alternative text, or `null`
     record Image(String source, @Nullable CssLength width, @Nullable CssLength height, boolean blockImage, @Nullable String alt) implements Inline {
     }
+
+    /// A TeX math span recognized in text content (only when
+    /// [org.jabref.htmltonode.HtmlRenderOptions#renderMath()] is enabled).
+    ///
+    /// @param tex     the TeX source between the delimiters, e.g. `\frac{1}{2}`
+    /// @param display display style (`$$…$$`, `\[…\]`) versus inline style (`$…$`, `\(…\)`)
+    /// @param source  the original text including delimiters — used for plain-text
+    ///                extraction and as fallback when the TeX cannot be rendered
+    /// @param style   the style of the surrounding run (font scale and explicit color apply)
+    record Math(String tex, boolean display, String source, InlineStyle style) implements Inline {
+    }
 }

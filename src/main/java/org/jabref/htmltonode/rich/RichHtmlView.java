@@ -135,7 +135,7 @@ public class RichHtmlView extends StackPane {
 
     private void rerender() {
         HtmlRenderOptions renderOptions = getOptions();
-        area.setModel(RichTextRenderer.buildModel(HtmlToNode.parse(getHtml(), renderOptions.baseUri()), renderOptions));
+        area.setModel(RichTextRenderer.buildModel(HtmlToNode.parse(getHtml(), renderOptions), renderOptions));
         RichTextRenderer.configure(area, renderOptions);
     }
 }

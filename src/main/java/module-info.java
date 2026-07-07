@@ -12,6 +12,10 @@ module org.jabref.htmltonode {
 
     requires transitive jfx.incubator.richtext;
 
+    // TeX math rendering (HtmlRenderOptions#renderMath); JLaTeXMath rasterizes via Java2D
+    requires java.desktop;
+    requires jlatexmath;
+
     exports org.jabref.htmltonode;
     exports org.jabref.htmltonode.model;
     exports org.jabref.htmltonode.rich;

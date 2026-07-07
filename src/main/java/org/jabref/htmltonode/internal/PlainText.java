@@ -92,6 +92,8 @@ public final class PlainText {
                         builder.append(alt);
                     }
                 }
+                // the original TeX including delimiters — plain-text copy round-trips
+                case Inline.Math math -> builder.append(math.source());
             }
         }
     }
