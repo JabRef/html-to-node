@@ -93,16 +93,23 @@ public final class RichTextRenderer {
             if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
                 TextPos position = area.getTextPosition(event.getScreenX(), event.getScreenY());
                 if (position != null) {
-                    // Node segments (embedded images, tables) carry no character attributes, so the
-                    // model returns null there — only text runs can hold an HREF.
-                    StyleAttributeMap attributes = area.getModel().getStyleAttributeMap(null, position);
-                    String href = attributes != null ? attributes.get(HREF) : null;
+                    String href = hrefAt(area.getModel(), position);
                     if (href != null) {
                         options.linkHandler().accept(href);
                     }
                 }
             }
         });
+    }
+
+    /// Returns the link target at `position`, or `null` if there is none.
+    ///
+    /// Node segments (embedded images, tables) carry no character attributes, so the model
+    /// returns a null attribute map there — only text runs can hold an [#HREF]. Clicking an
+    /// image therefore lands on a null map, which this method tolerates.
+    public static @Nullable String hrefAt(StyledTextModel model, TextPos position) {
+        StyleAttributeMap attributes = model.getStyleAttributeMap(null, position);
+        return attributes != null ? attributes.get(HREF) : null;
     }
 
     private void appendBlocks(List<Block> blocks) {
