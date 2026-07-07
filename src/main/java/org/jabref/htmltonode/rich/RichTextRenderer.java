@@ -90,7 +90,12 @@ public final class RichTextRenderer {
         area.setWrapText(true);
         area.getStyleClass().add("html-rich-view");
         area.setOnMouseClicked(event -> {
-            if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()) {
+            // getTextPosition(x, y) snaps *any* coordinate to the nearest caret position, so a click in
+            // the empty area past a trailing link would otherwise resolve to — and open — that link.
+            // Requiring the pick to land on a Text glyph (every run is a Text node) keeps clicks on the
+            // surrounding whitespace, embedded images, and other non-text nodes inert.
+            if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()
+                    && event.getPickResult().getIntersectedNode() instanceof Text) {
                 TextPos position = area.getTextPosition(event.getScreenX(), event.getScreenY());
                 if (position != null) {
                     // Node segments (embedded images, tables) carry no character attributes, so the
