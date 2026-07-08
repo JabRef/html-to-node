@@ -5,6 +5,7 @@ import java.util.List;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 
 import org.jabref.htmltonode.FxRenderer;
 import org.jabref.htmltonode.HtmlRenderOptions;
@@ -120,20 +121,40 @@ public final class RichTextRenderer {
     private void appendBlocks(List<Block> blocks) {
         for (Block block : blocks) {
             switch (block) {
-                case Block.Paragraph(List<Inline> inlines, boolean spaced, List<String> ignored) ->
+                case Block.Paragraph(
+                        List<Inline> inlines,
+                        boolean spaced,
+                        List<String> ignored
+                ) ->
                         paragraph(inlines, 1.0, 400, spaced ? baseSize : 0);
-                case Block.Heading(int level, List<Inline> inlines, List<String> ignored) ->
+                case Block.Heading(
+                        int level,
+                        List<Inline> inlines,
+                        List<String> ignored
+                ) ->
                         paragraph(inlines, RenderSupport.headingScale(level), 700, baseSize);
-                case Block.Pre(List<Inline> inlines, List<String> ignored) ->
+                case Block.Pre(
+                        List<Inline> inlines,
+                        List<String> ignored
+                ) ->
                         paragraph(inlines, 1.0, 400, baseSize);
-                case Block.Container(List<Block> children, List<String> ignored) ->
+                case Block.Container(
+                        List<Block> children,
+                        List<String> ignored
+                ) ->
                         appendBlocks(children);
-                case Block.Quote(List<Block> children) -> {
+                case Block.Quote(
+                        List<Block> children
+                ) -> {
                     indent += 2 * baseSize;
                     appendBlocks(children);
                     indent -= 2 * baseSize;
                 }
-                case Block.ListBlock(boolean ordered, int start, List<Block.ListItem> items) -> {
+                case Block.ListBlock(
+                        boolean ordered,
+                        int start,
+                        List<Block.ListItem> items
+                ) -> {
                     int number = start;
                     for (Block.ListItem item : items) {
                         pendingMarker = ordered ? (number++) + ". " : "• ";
@@ -143,7 +164,9 @@ public final class RichTextRenderer {
                         pendingMarker = null;
                     }
                 }
-                case Block.DefinitionList(List<Block.DefinitionItem> items) -> {
+                case Block.DefinitionList(
+                        List<Block.DefinitionItem> items
+                ) -> {
                     for (Block.DefinitionItem item : items) {
                         if (item.term()) {
                             appendBlocks(item.blocks());
@@ -174,7 +197,10 @@ public final class RichTextRenderer {
         startParagraph(spaceAbove);
         for (Inline inline : inlines) {
             switch (inline) {
-                case Inline.TextRun(String text, InlineStyle style) -> {
+                case Inline.TextRun(
+                        String text,
+                        InlineStyle style
+                ) -> {
                     InlineStyle effective = style;
                     if (scale != 1.0) {
                         effective = effective.withFontScale(effective.fontScale() * scale);
@@ -264,8 +290,8 @@ public final class RichTextRenderer {
         StyleAttributeMap.Builder builder = StyleAttributeMap.builder();
         builder.setFontSize(baseSize * style.fontScale() * sizeFactor);
         String family = style.fontFamily() != null
-                ? style.fontFamily()
-                : (style.monospace() ? options.monospaceFontFamily() : baseFamily);
+                        ? style.fontFamily()
+                        : (style.monospace() ? options.monospaceFontFamily() : baseFamily);
         builder.setFontFamily(family);
         if (style.bold()) {
             builder.setBold(true);
