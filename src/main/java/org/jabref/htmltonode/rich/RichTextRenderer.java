@@ -2,15 +2,12 @@ package org.jabref.htmltonode.rich;
 
 import java.util.List;
 
-import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Text;
 
 import org.jabref.htmltonode.FxRenderer;
 import org.jabref.htmltonode.HtmlRenderOptions;
-import org.jabref.htmltonode.internal.MathRendering;
 import org.jabref.htmltonode.internal.RenderSupport;
 import org.jabref.htmltonode.model.Block;
 import org.jabref.htmltonode.model.Inline;
@@ -98,7 +95,10 @@ public final class RichTextRenderer {
                     && event.getPickResult().getIntersectedNode() instanceof Text) {
                 TextPos position = area.getTextPosition(event.getScreenX(), event.getScreenY());
                 if (position != null) {
-                    String href = hrefAt(area.getModel(), position);
+                    // Node segments (embedded images, tables) carry no character attributes, so the
+                    // model returns null there — only text runs can hold an HREF.
+                    StyleAttributeMap attributes = area.getModel().getStyleAttributeMap(null, position);
+                    String href = attributes != null ? attributes.get(HREF) : null;
                     if (href != null) {
                         options.linkHandler().accept(href);
                     }
@@ -196,20 +196,6 @@ public final class RichTextRenderer {
                     if (RenderSupport.createImageView(image, options, baseSize) != null) {
                         model.addNodeSegment(() -> RenderSupport.createImageView(image, options, baseSize));
                         paragraphOccupied = true;
-                    }
-                }
-                case Inline.Math math -> {
-                    if (MathRendering.isRenderable(math)) {
-                        double fontSize = baseSize * math.style().fontScale() * scale;
-                        // the node factory runs on the FX thread when the paragraph is shown;
-                        // if the image subsystem is unavailable there, show the TeX source
-                        model.addNodeSegment(() -> {
-                            Node node = MathRendering.createMathNode(math, fontSize);
-                            return node != null ? node : new Text(math.source());
-                        });
-                        paragraphOccupied = true;
-                    } else {
-                        appendRun(math.source(), math.style());
                     }
                 }
             }
