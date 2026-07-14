@@ -1,20 +1,19 @@
-name: Publish snapshot to Maven Central
+name: Release to Maven Central
 
 on:
   push:
-    branches:
-      - main
-  workflow_dispatch:
+    tags:
+      - 'v*'
 
 permissions:
   contents: read
 
 concurrency:
-  group: "${{ github.workflow }}-${{ github.head_ref || github.ref }}"
-  cancel-in-progress: true
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: false
 
 jobs:
-  publish:
+  release:
     runs-on: ubuntu-latest
     if: github.repository == 'JabRef/html-to-node'
     steps:
@@ -44,12 +43,11 @@ jobs:
           mavenCentralUsername=${{ secrets.KOPPOR_MAVENCENTRALUSERNAME }}
           mavenCentralPassword=${{ secrets.KOPPOR_MAVENCENTRALPASSWORD }}
           EOF
-      - name: Publish snapshot
-        # Release versions are published by release.yml on tag push; this workflow only
-        # handles the rolling snapshot
+      - name: Guard against SNAPSHOT releases
         run: |
-          if ! grep -q 'version = ".*-SNAPSHOT"' build.gradle.kts; then
-            echo "Version is not a SNAPSHOT - skipping (releases go through release.yml)."
-            exit 0
+          if grep -q 'version = ".*-SNAPSHOT"' build.gradle.kts; then
+            echo "Tagged commit still has a SNAPSHOT version - refusing to release."
+            exit 1
           fi
-          ./gradlew publishAllPublicationsToMavenCentralRepository
+      - name: Publish and release
+        run: ./gradlew publishAndReleaseToMavenCentral

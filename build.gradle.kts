@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "org.jabref"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 
 repositories {
     mavenCentral()

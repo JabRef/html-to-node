@@ -25,8 +25,17 @@ in the POM because OpenJFX artifacts are platform-specific.
 ## Installation
 
 Snapshots are published to the
+Released versions are available from [Maven Central](https://central.sonatype.com/artifact/org.jabref/html-to-node):
+
+```kotlin
+dependencies {
+    implementation("org.jabref:html-to-node:0.1.0")
+}
+```
+
+Snapshots are published to the
 [Maven Central snapshot repository](https://central.sonatype.com/repository/maven-snapshots/)
-on every push to `main` (no release on Maven Central yet):
+on every push to `main`:
 
 ```kotlin
 repositories {
