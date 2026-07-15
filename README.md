@@ -1,4 +1,5 @@
 # html-to-node
+[![APIdia](https://apidia.net/mvn/org.jabref/html-to-node/badge.svg)](https://apidia.net/mvn/org.jabref/html-to-node)
 
 A JavaFX library that renders HTML as plain scene-graph nodes (`TextFlow`, `Text`, `ImageView`),
 with no dependency on `javafx.web` or `javafx.controls`.
