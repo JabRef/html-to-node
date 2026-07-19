@@ -22,8 +22,9 @@ import org.jspecify.annotations.Nullable;
 /// `org.jabref.htmltonode.HtmlView`, but with native text selection, caret navigation, and
 /// accessibility. The area scrolls itself; do not wrap this view in a `ScrollPane`.
 ///
-/// Re-renders whenever [#htmlProperty()] or [#optionsProperty()] changes. Must be used on the
-/// JavaFX application thread. Requires the `jfx.incubator.richtext` module at runtime.
+/// Re-renders whenever [#htmlProperty()] or [#optionsProperty()] changes, except while
+/// [#setHtml(String,HtmlRenderOptions)] updates both — that renders once, at the end. Must be used
+/// on the JavaFX application thread. Requires the `jfx.incubator.richtext` module at runtime.
 public class RichHtmlView extends StackPane {
 
     private final RichTextArea area = new HtmlRichTextArea();
@@ -70,9 +71,11 @@ public class RichHtmlView extends StackPane {
             html.set(newHtml == null ? "" : newHtml);
             options.set(effectiveOptions);
         } finally {
+            // In the finally block so a throwing property listener cannot leave the rendered
+            // content out of sync with the already-updated properties.
             updatesAreBatched = false;
+            rerender();
         }
-        rerender();
     }
 
     /// The rendering options of this view. Setting a new value re-renders. Never `null`.

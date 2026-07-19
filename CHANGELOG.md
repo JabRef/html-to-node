@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `RichHtmlView#setHtml(String, HtmlRenderOptions)`, which updates the HTML and the render options with a single model rebuild instead of one per property.
+
 ## [0.1.0] - 2026-07-14
 
 ### Added
