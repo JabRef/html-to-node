@@ -45,7 +45,7 @@ jobs:
           EOF
       - name: Guard against SNAPSHOT releases
         run: |
-          if grep -q 'version = ".*-SNAPSHOT"' build.gradle.kts; then
+          if grep -q '^version = .*SNAPSHOT' build.gradle.kts; then
             echo "Tagged commit still has a SNAPSHOT version - refusing to release."
             exit 1
           fi
