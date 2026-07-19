@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 
+import org.jabref.htmltonode.HtmlRenderOptions;
 import org.jabref.htmltonode.rich.RichHtmlView;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -73,7 +74,7 @@ class RichHtmlViewTest {
         Platform.runLater(() -> {
             try {
                 RichHtmlView view = new RichHtmlView();
-                view.setHtml("<b>Kopp, O.</b>: <i>Some Paper</i>");
+                view.setHtml("<b>Kopp, O.</b>: <i>Some Paper</i>", HtmlRenderOptions.defaults());
                 new Scene(view, 400, 300);
                 view.applyCss();
                 view.getRichTextArea().applyCss();

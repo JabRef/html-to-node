@@ -30,14 +30,15 @@ public class RichHtmlView extends StackPane {
     private final StringProperty html = new SimpleStringProperty(this, "html", "");
     private final ObjectProperty<HtmlRenderOptions> options =
             new SimpleObjectProperty<>(this, "options", HtmlRenderOptions.defaults());
+    private boolean updatesAreBatched;
 
     /// Creates an empty view with [HtmlRenderOptions#defaults()].
     public RichHtmlView() {
         setAlignment(Pos.TOP_LEFT);
         getStylesheets().add(HtmlToNode.stylesheet());
         getChildren().add(area);
-        html.addListener((observable, oldValue, newValue) -> rerender());
-        options.addListener((observable, oldValue, newValue) -> rerender());
+        html.addListener((observable, oldValue, newValue) -> rerenderIfNeeded());
+        options.addListener((observable, oldValue, newValue) -> rerenderIfNeeded());
         rerender();
     }
 
@@ -56,6 +57,22 @@ public class RichHtmlView extends StackPane {
     /// @param newHtml the HTML content to render; `null` is treated as empty
     public final void setHtml(@Nullable String newHtml) {
         html.set(newHtml == null ? "" : newHtml);
+    }
+
+    /// Updates the HTML content and render options in one model rebuild.
+    ///
+    /// @param newHtml the HTML content to render; `null` is treated as empty
+    /// @param newOptions the rendering options; `null` restores [HtmlRenderOptions#defaults()]
+    public final void setHtml(@Nullable String newHtml, @Nullable HtmlRenderOptions newOptions) {
+        HtmlRenderOptions effectiveOptions = newOptions == null ? HtmlRenderOptions.defaults() : newOptions;
+        updatesAreBatched = true;
+        try {
+            html.set(newHtml == null ? "" : newHtml);
+            options.set(effectiveOptions);
+        } finally {
+            updatesAreBatched = false;
+        }
+        rerender();
     }
 
     /// The rendering options of this view. Setting a new value re-renders. Never `null`.
@@ -137,5 +154,11 @@ public class RichHtmlView extends StackPane {
         HtmlRenderOptions renderOptions = getOptions();
         area.setModel(RichTextRenderer.buildModel(HtmlToNode.parse(getHtml(), renderOptions.baseUri()), renderOptions));
         RichTextRenderer.configure(area, renderOptions);
+    }
+
+    private void rerenderIfNeeded() {
+        if (!updatesAreBatched) {
+            rerender();
+        }
     }
 }
