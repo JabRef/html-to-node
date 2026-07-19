@@ -22,22 +22,24 @@ import org.jspecify.annotations.Nullable;
 /// `org.jabref.htmltonode.HtmlView`, but with native text selection, caret navigation, and
 /// accessibility. The area scrolls itself; do not wrap this view in a `ScrollPane`.
 ///
-/// Re-renders whenever [#htmlProperty()] or [#optionsProperty()] changes. Must be used on the
-/// JavaFX application thread. Requires the `jfx.incubator.richtext` module at runtime.
+/// Re-renders whenever [#htmlProperty()] or [#optionsProperty()] changes, except while
+/// [#setHtml(String,HtmlRenderOptions)] updates both — that renders once, at the end. Must be used
+/// on the JavaFX application thread. Requires the `jfx.incubator.richtext` module at runtime.
 public class RichHtmlView extends StackPane {
 
     private final RichTextArea area = new HtmlRichTextArea();
     private final StringProperty html = new SimpleStringProperty(this, "html", "");
     private final ObjectProperty<HtmlRenderOptions> options =
             new SimpleObjectProperty<>(this, "options", HtmlRenderOptions.defaults());
+    private boolean updatesAreBatched;
 
     /// Creates an empty view with [HtmlRenderOptions#defaults()].
     public RichHtmlView() {
         setAlignment(Pos.TOP_LEFT);
         getStylesheets().add(HtmlToNode.stylesheet());
         getChildren().add(area);
-        html.addListener((observable, oldValue, newValue) -> rerender());
-        options.addListener((observable, oldValue, newValue) -> rerender());
+        html.addListener((observable, oldValue, newValue) -> rerenderIfNeeded());
+        options.addListener((observable, oldValue, newValue) -> rerenderIfNeeded());
         rerender();
     }
 
@@ -56,6 +58,24 @@ public class RichHtmlView extends StackPane {
     /// @param newHtml the HTML content to render; `null` is treated as empty
     public final void setHtml(@Nullable String newHtml) {
         html.set(newHtml == null ? "" : newHtml);
+    }
+
+    /// Updates the HTML content and render options in one model rebuild.
+    ///
+    /// @param newHtml the HTML content to render; `null` is treated as empty
+    /// @param newOptions the rendering options; `null` restores [HtmlRenderOptions#defaults()]
+    public final void setHtml(@Nullable String newHtml, @Nullable HtmlRenderOptions newOptions) {
+        HtmlRenderOptions effectiveOptions = newOptions == null ? HtmlRenderOptions.defaults() : newOptions;
+        updatesAreBatched = true;
+        try {
+            html.set(newHtml == null ? "" : newHtml);
+            options.set(effectiveOptions);
+        } finally {
+            // In the finally block so a throwing property listener cannot leave the rendered
+            // content out of sync with the already-updated properties.
+            updatesAreBatched = false;
+            rerender();
+        }
     }
 
     /// The rendering options of this view. Setting a new value re-renders. Never `null`.
@@ -137,5 +157,11 @@ public class RichHtmlView extends StackPane {
         HtmlRenderOptions renderOptions = getOptions();
         area.setModel(RichTextRenderer.buildModel(HtmlToNode.parse(getHtml(), renderOptions.baseUri()), renderOptions));
         RichTextRenderer.configure(area, renderOptions);
+    }
+
+    private void rerenderIfNeeded() {
+        if (!updatesAreBatched) {
+            rerender();
+        }
     }
 }
