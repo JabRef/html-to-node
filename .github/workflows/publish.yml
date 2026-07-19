@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -16,11 +17,26 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    if: github.repository == 'JabRef/html-to-node'
+    # Fork PRs get no secrets, so they can never publish - don't even start the job for them
+    if: github.repository == 'JabRef/html-to-node' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     steps:
       - uses: actions/checkout@v7
         with:
           show-progress: 'false'
+          # Publish the branch as-is, not GitHub's main-merged ref, and keep enough
+          # history for the is-up-to-date check below
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+      - name: Skip if branch is behind main
+        id: uptodate
+        # A stale branch would publish a snapshot missing commits that are already on
+        # main, silently downgrading the artifact for everyone consuming it
+        run: |
+          git fetch --no-tags origin main
+          if [ "${{ github.event_name }}" = "pull_request" ] && ! git merge-base --is-ancestor FETCH_HEAD HEAD; then
+            echo "Branch is behind main - rebase/merge main before a snapshot is published."
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Setup JDK
         uses: actions/setup-java@v5
         with:
@@ -45,11 +61,14 @@ jobs:
           mavenCentralPassword=${{ secrets.KOPPOR_MAVENCENTRALPASSWORD }}
           EOF
       - name: Publish snapshot
+        if: steps.uptodate.outputs.skip != 'true'
         # Release versions are published by release.yml on tag push; this workflow only
         # handles the rolling snapshot
         run: |
-          if ! grep -q 'version = ".*-SNAPSHOT"' build.gradle.kts; then
+          if ! grep -q '^version = .*SNAPSHOT' build.gradle.kts; then
             echo "Version is not a SNAPSHOT - skipping (releases go through release.yml)."
             exit 0
           fi
-          ./gradlew publishAllPublicationsToMavenCentralRepository
+          ./gradlew ${PR_NUMBER:+-PversionSuffix=PR$PR_NUMBER} publishAllPublicationsToMavenCentralRepository
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
