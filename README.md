@@ -30,7 +30,7 @@ Released versions are available from [Maven Central](https://central.sonatype.co
 
 ```kotlin
 dependencies {
-    implementation("org.jabref:html-to-node:0.1.0")
+    implementation("org.jabref:html-to-node:0.2.0")
 }
 ```
 

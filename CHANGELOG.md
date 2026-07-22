@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-22
+
 ### Added
 
 - `RichHtmlView#setHtml(String, HtmlRenderOptions)`, which updates the HTML and the render options with a single model rebuild instead of one per property.
@@ -22,5 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RichTextArea-based renderer (`RichHtmlView`, `HtmlRichTextArea`, `RichTextRenderer`) with inline images, link hovering (hand cursor), and content-height sizing. It requires the `jfx.incubator.richtext` and `jfx.incubator.input` incubator modules, declared as `requires static`.
 - The module is null-marked with [JSpecify](https://jspecify.dev/) annotations.
 
-[Unreleased]: https://github.com/JabRef/html-to-node/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/JabRef/html-to-node/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/JabRef/html-to-node/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/JabRef/html-to-node/releases/tag/v0.1.0
