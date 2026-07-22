@@ -58,7 +58,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jabref:html-to-node:0.2.0-SNAPSHOT")
+    implementation("org.jabref:html-to-node:0.3.0-SNAPSHOT")
 }
 ```
 
