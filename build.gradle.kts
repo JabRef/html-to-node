@@ -57,7 +57,7 @@ dependencies {
     testImplementation("org.openjfx:jfx-incubator-input:$javafxVersion:$jfxPlatform")
     testImplementation("org.openjfx:jfx-incubator-richtext:$javafxVersion:$jfxPlatform")
 
-    testImplementation(platform("org.junit:junit-bom:6.1.2"))
+    testImplementation(platform("org.junit:junit-bom:6.1.3"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
