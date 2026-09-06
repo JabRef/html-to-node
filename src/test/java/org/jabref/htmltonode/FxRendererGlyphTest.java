@@ -20,8 +20,10 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
+import javafx.scene.text.FontSmoothingType;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextBoundsType;
 import javafx.scene.text.TextFlow;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
@@ -40,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 ///
 /// The comparison is saved at `build/reports/html-bold-run.png`,
 /// `build/reports/direct-javafx-bold.png`, `build/reports/richtext-html-bold.png`, and
-/// `build/reports/webview-html-bold.png`. A labeled comparison of the three renderers is saved at
+/// `build/reports/webview-html-bold.png`. A labeled renderer comparison is saved at
 /// `build/reports/glyph-renderer-comparison.png`. This needs the JavaFX toolkit because the
 /// renderer pins the HTML font through inline CSS. Their normalized ARGB pixel differences are
 /// reported in `build/reports/glyph-pixel-differences.txt`.
@@ -50,11 +52,20 @@ class FxRendererGlyphTest {
     private static final String BOLD_TEXT = "JabRef: BibTeX-based literature management software";
     private static final double FONT_SIZE = 16;
     private static final Path HTML_SCREENSHOT_PATH = Path.of("build", "reports", "html-bold-run.png");
+    private static final Path STYLED_HTML_SCREENSHOT_PATH = Path.of("build", "reports", "htmlview-jabref-text-css.png");
     private static final Path DIRECT_TEXT_SCREENSHOT_PATH = Path.of("build", "reports", "direct-javafx-bold.png");
     private static final Path RICH_TEXT_SCREENSHOT_PATH = Path.of("build", "reports", "richtext-html-bold.png");
     private static final Path WEB_VIEW_SCREENSHOT_PATH = Path.of("build", "reports", "webview-html-bold.png");
     private static final Path RENDERER_COMPARISON_PATH = Path.of("build", "reports", "glyph-renderer-comparison.png");
     private static final Path PIXEL_DIFFERENCE_REPORT_PATH = Path.of("build", "reports", "glyph-pixel-differences.txt");
+    private static final Path JABREF_TEXT_STYLESHEET_PATH = Path.of("build", "reports", "jabref-text-rendering.css");
+
+    private static final String JABREF_TEXT_STYLESHEET = """
+            .text {
+                -fx-bounds-type: logical_vertical_center;
+                -fx-font-smoothing-type: gray;
+            }
+            """;
 
     @BeforeAll
     static void startToolkit() throws InterruptedException {
@@ -73,11 +84,13 @@ class FxRendererGlyphTest {
         AtomicReference<Text> boldRun = new AtomicReference<>();
         AtomicReference<Text> directText = new AtomicReference<>();
         AtomicReference<WritableImage> htmlScreenshot = new AtomicReference<>();
+        AtomicReference<WritableImage> styledHtmlScreenshot = new AtomicReference<>();
         AtomicReference<WritableImage> directTextScreenshot = new AtomicReference<>();
         AtomicReference<WritableImage> richTextScreenshot = new AtomicReference<>();
         AtomicReference<WritableImage> webViewScreenshot = new AtomicReference<>();
         AtomicReference<WritableImage> rendererComparisonScreenshot = new AtomicReference<>();
         CountDownLatch rendered = new CountDownLatch(1);
+        String stylesheet = writeJabRefTextStylesheet();
 
         Platform.runLater(() -> {
             try {
@@ -86,6 +99,14 @@ class FxRendererGlyphTest {
                         .withBaseFontFamily("System")
                         .withBaseFontSize(FONT_SIZE);
                 VBox view = (VBox) HtmlToNode.render(html, options);
+                VBox styledView = (VBox) HtmlToNode.render(html, options);
+                TextFlow styledFlow = (TextFlow) styledView.getChildren().getFirst();
+                styledFlow.getChildren().stream()
+                          .filter(Text.class::isInstance)
+                          .map(Text.class::cast)
+                          .findFirst()
+                          .orElseThrow()
+                          .getStyleClass().add("text");
                 Text reference = new Text(BOLD_TEXT);
                 reference.setFont(Font.font("System", FontWeight.BOLD, FONT_SIZE));
                 VBox directTextView = new VBox(reference);
@@ -96,9 +117,11 @@ class FxRendererGlyphTest {
                 WebView webView = new WebView();
                 webView.setPrefSize(1000, 40);
                 webView.setMinSize(1000, 40);
-                VBox comparison = new VBox(10, view, directTextView, richTextView, webView);
+                VBox comparison = new VBox(10, view, styledView, directTextView, richTextView, webView);
                 Stage stage = new Stage();
-                stage.setScene(new Scene(comparison, 1000, 200));
+                Scene scene = new Scene(comparison, 1000, 240);
+                scene.getStylesheets().add(stylesheet);
+                stage.setScene(scene);
                 stage.show();
                 comparison.applyCss();
                 comparison.layout();
@@ -109,6 +132,7 @@ class FxRendererGlyphTest {
                                       .orElseThrow());
                 directText.set(reference);
                 htmlScreenshot.set(view.snapshot(new SnapshotParameters(), null));
+                styledHtmlScreenshot.set(styledView.snapshot(new SnapshotParameters(), null));
                 directTextScreenshot.set(directTextView.snapshot(new SnapshotParameters(), null));
                 richTextScreenshot.set(richTextView.snapshot(new SnapshotParameters(), null));
                 webView.getEngine().getLoadWorker().stateProperty().addListener((_, _, state) -> {
@@ -120,6 +144,7 @@ class FxRendererGlyphTest {
                                 webViewScreenshot.set(webView.snapshot(new SnapshotParameters(), null));
                                 rendererComparisonScreenshot.set(createRendererComparison(
                                         htmlScreenshot.get(),
+                                        styledHtmlScreenshot.get(),
                                         richTextScreenshot.get(),
                                         webViewScreenshot.get()));
                             } catch (Throwable throwable) {
@@ -152,13 +177,57 @@ class FxRendererGlyphTest {
         }
 
         writeScreenshot(htmlScreenshot.get(), HTML_SCREENSHOT_PATH);
+        writeScreenshot(styledHtmlScreenshot.get(), STYLED_HTML_SCREENSHOT_PATH);
         writeScreenshot(directTextScreenshot.get(), DIRECT_TEXT_SCREENSHOT_PATH);
         writeScreenshot(richTextScreenshot.get(), RICH_TEXT_SCREENSHOT_PATH);
         writeScreenshot(webViewScreenshot.get(), WEB_VIEW_SCREENSHOT_PATH);
         writeScreenshot(rendererComparisonScreenshot.get(), RENDERER_COMPARISON_PATH);
-        writePixelDifferenceReport(htmlScreenshot.get(), directTextScreenshot.get(), richTextScreenshot.get(), webViewScreenshot.get());
+        writePixelDifferenceReport(htmlScreenshot.get(), styledHtmlScreenshot.get(), directTextScreenshot.get(), richTextScreenshot.get(), webViewScreenshot.get());
         assertEquals(directText.get().getFont(), boldRun.get().getFont());
         assertEquals(directText.get().getLayoutBounds().getWidth(), boldRun.get().getLayoutBounds().getWidth(), 0.01);
+    }
+
+    @Test
+    void jabRefTextRulesApplyToBoldRunWithTextStyleClass() throws Exception {
+        String stylesheet = writeJabRefTextStylesheet();
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        AtomicReference<Text> boldRun = new AtomicReference<>();
+        CountDownLatch rendered = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            try {
+                VBox view = (VBox) HtmlToNode.render("<b>" + BOLD_TEXT + "</b>", HtmlRenderOptions.defaults()
+                        .withBaseFontFamily("System")
+                        .withBaseFontSize(FONT_SIZE));
+                TextFlow flow = (TextFlow) view.getChildren().getFirst();
+                Text renderedBoldRun = (Text) flow.getChildren().stream()
+                                                   .filter(Text.class::isInstance)
+                                                   .findFirst()
+                                                   .orElseThrow();
+                renderedBoldRun.getStyleClass().add("text");
+                Scene scene = new Scene(view, 1000, 100);
+                scene.getStylesheets().add(stylesheet);
+                view.applyCss();
+                boldRun.set(renderedBoldRun);
+            } catch (Throwable throwable) {
+                error.set(throwable);
+            } finally {
+                rendered.countDown();
+            }
+        });
+
+        assertTrue(rendered.await(15, TimeUnit.SECONDS), "FX task timed out");
+        if (error.get() != null) {
+            throw new AssertionError("FX task failed", error.get());
+        }
+        assertEquals(TextBoundsType.LOGICAL_VERTICAL_CENTER, boldRun.get().getBoundsType());
+        assertEquals(FontSmoothingType.GRAY, boldRun.get().getFontSmoothingType());
+    }
+
+    private static String writeJabRefTextStylesheet() throws IOException {
+        Files.createDirectories(JABREF_TEXT_STYLESHEET_PATH.getParent());
+        Files.writeString(JABREF_TEXT_STYLESHEET_PATH, JABREF_TEXT_STYLESHEET);
+        return JABREF_TEXT_STYLESHEET_PATH.toUri().toString();
     }
 
     private static void writeScreenshot(WritableImage screenshot, Path screenshotPath) throws IOException {
@@ -173,10 +242,12 @@ class FxRendererGlyphTest {
     }
 
     private static WritableImage createRendererComparison(WritableImage htmlImage,
+                                                          WritableImage styledHtmlImage,
                                                           WritableImage richTextImage,
                                                           WritableImage webViewImage) {
         VBox comparison = new VBox(10,
                 rendererRow("HtmlView (TextFlow)", htmlImage),
+                rendererRow("HtmlView + .text CSS", styledHtmlImage),
                 rendererRow("RichHtmlView", richTextImage),
                 rendererRow("WebView", webViewImage));
         new Scene(comparison);
@@ -194,13 +265,18 @@ class FxRendererGlyphTest {
     }
 
     private static void writePixelDifferenceReport(WritableImage htmlImage,
+                                                   WritableImage styledHtmlImage,
                                                    WritableImage directTextImage,
                                                    WritableImage richTextImage,
                                                    WritableImage webViewImage) throws IOException {
         List<PixelComparison> comparisons = List.of(
                 comparePixels("html-bold-run.png", htmlImage, "direct-javafx-bold.png", directTextImage),
+                comparePixels("html-bold-run.png", htmlImage, "htmlview-jabref-text-css.png", styledHtmlImage),
                 comparePixels("html-bold-run.png", htmlImage, "richtext-html-bold.png", richTextImage),
                 comparePixels("html-bold-run.png", htmlImage, "webview-html-bold.png", webViewImage),
+                comparePixels("htmlview-jabref-text-css.png", styledHtmlImage, "direct-javafx-bold.png", directTextImage),
+                comparePixels("htmlview-jabref-text-css.png", styledHtmlImage, "richtext-html-bold.png", richTextImage),
+                comparePixels("htmlview-jabref-text-css.png", styledHtmlImage, "webview-html-bold.png", webViewImage),
                 comparePixels("direct-javafx-bold.png", directTextImage, "richtext-html-bold.png", richTextImage),
                 comparePixels("direct-javafx-bold.png", directTextImage, "webview-html-bold.png", webViewImage),
                 comparePixels("richtext-html-bold.png", richTextImage, "webview-html-bold.png", webViewImage));
