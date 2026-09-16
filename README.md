@@ -1,4 +1,5 @@
 # html-to-node
+
 [![APIdia](https://apidia.net/mvn/org.jabref/html-to-node/badge.svg)](https://apidia.net/mvn/org.jabref/html-to-node)
 
 A JavaFX library that renders HTML as plain scene-graph nodes (`TextFlow`, `Text`, `ImageView`),
@@ -13,8 +14,8 @@ markup.
 
 ## Requirements
 
-- Java 24 or later
-- JavaFX 26 or later, provided by the consuming application: `javafx.base`, `javafx.graphics`,
+- Java 25 or later
+- JavaFX 27 or later, provided by the consuming application: `javafx.base`, `javafx.graphics`,
   and — for the RichTextArea renderer — `javafx.controls`, `jfx.incubator.input`, and
   `jfx.incubator.richtext`
 
@@ -30,7 +31,7 @@ Released versions are available from [Maven Central](https://central.sonatype.co
 
 ```kotlin
 dependencies {
-    implementation("org.jabref:html-to-node:0.2.0")
+    implementation("org.jabref:html-to-node:1.0.0")
 }
 ```
 
@@ -58,7 +59,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jabref:html-to-node:0.3.0-SNAPSHOT")
+    implementation("org.jabref:html-to-node:1.0.0-SNAPSHOT")
 }
 ```
 

@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "org.jabref"
-// -PversionSuffix=PR17 turns 0.3.0-SNAPSHOT into 0.3.0-PR17-SNAPSHOT, so a pull request
+// -PversionSuffix=PR17 turns 1.0.0-SNAPSHOT into 1.0.0-PR17-SNAPSHOT, so a pull request
 // snapshot is identifiable and does not clobber the one built from main
 version = "1.0.0" + (findProperty("versionSuffix")?.let { "-$it" } ?: "") + "-SNAPSHOT"
 
@@ -23,8 +23,8 @@ java {
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    // JavaFX 26 ships Java-24 class files; 24 keeps the library usable one release below JabRef's 25
-    options.release = 24
+    // JavaFX 27 baseline is now jdk 25
+    options.release = 25
     options.encoding = "UTF-8"
 }
 
