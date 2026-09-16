@@ -27,7 +27,7 @@ class RichTextRendererTest {
     }
 
     private static StyleAttributeMap attributesAt(StyledTextModel model, int paragraph, int offset) {
-        return model.getStyleAttributeMap(null, TextPos.ofLeading(paragraph, offset));
+        return model.getStyleAttributeMap(null, TextPos.ofLeading(paragraph, offset), false);
     }
 
     @Test

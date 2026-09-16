@@ -11,6 +11,7 @@ import javafx.scene.text.Text;
 import org.jabref.htmltonode.rich.HtmlRichTextArea;
 import org.jabref.htmltonode.rich.RichTextRenderer;
 
+import jfx.incubator.scene.control.richtext.model.StyleAttribute;
 import jfx.incubator.scene.control.richtext.model.StyleAttributeMap;
 import jfx.incubator.scene.control.richtext.skin.CellContext;
 import org.junit.jupiter.api.BeforeAll;
@@ -60,6 +61,11 @@ class HtmlRichTextAreaTest {
         @Override
         public StyleAttributeMap getAttributes() {
             return StyleAttributeMap.builder().build();
+        }
+
+        @Override
+        public <T> void decorateRun(StyleAttribute<T> attribute, RunDecor type, String styleName) {
+            // Decorations are not involved in the cursor-style handler under test.
         }
 
         String style() {

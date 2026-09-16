@@ -34,7 +34,7 @@ import org.jspecify.annotations.Nullable;
 public final class RichTextRenderer {
 
     /// Character attribute carrying a link target; resolved on mouse click.
-    public static final StyleAttribute<String> HREF = new StyleAttribute<>("HREF", String.class, false);
+    public static final StyleAttribute<String> HREF = StyleAttribute.character("HREF", String.class);
 
     /// Fallback link color; matches FxRenderer's un-themed link fill.
     private static final Color LINK_COLOR = Color.web("#0b66c3");
@@ -98,7 +98,7 @@ public final class RichTextRenderer {
                 if (position != null) {
                     // Node segments (embedded images, tables) carry no character attributes, so the
                     // model returns null there — only text runs can hold an HREF.
-                    StyleAttributeMap attributes = area.getModel().getStyleAttributeMap(null, position);
+                    StyleAttributeMap attributes = area.getStyleAttributeMap(position, false);
                     String href = attributes != null ? attributes.get(HREF) : null;
                     if (href != null) {
                         options.linkHandler().accept(href);
@@ -114,7 +114,7 @@ public final class RichTextRenderer {
     /// returns a null attribute map there — only text runs can hold an [#HREF]. Clicking an
     /// image therefore lands on a null map, which this method tolerates.
     public static @Nullable String hrefAt(StyledTextModel model, TextPos position) {
-        StyleAttributeMap attributes = model.getStyleAttributeMap(null, position);
+        StyleAttributeMap attributes = model.getStyleAttributeMap(null, position, false);
         return attributes != null ? attributes.get(HREF) : null;
     }
 

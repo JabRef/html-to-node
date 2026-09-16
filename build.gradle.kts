@@ -10,7 +10,7 @@ plugins {
 group = "org.jabref"
 // -PversionSuffix=PR17 turns 0.3.0-SNAPSHOT into 0.3.0-PR17-SNAPSHOT, so a pull request
 // snapshot is identifiable and does not clobber the one built from main
-version = "0.3.0" + (findProperty("versionSuffix")?.let { "-$it" } ?: "") + "-SNAPSHOT"
+version = "1.0.0" + (findProperty("versionSuffix")?.let { "-$it" } ?: "") + "-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -29,7 +29,7 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 // JavaFX artifacts are platform-specific; consumers provide their own JavaFX (hence compileOnly)
-val javafxVersion = "26.0.1"
+val javafxVersion = "27"
 val jfxPlatform = run {
     val osName = System.getProperty("os.name").lowercase()
     val arch = System.getProperty("os.arch").lowercase()
@@ -136,7 +136,7 @@ tasks.test {
 }
 
 // Tests of the RichTextArea renderer need the JavaFX toolkit: a display or xvfb-run
-val guiTest by tasks.registering(Test::class) {
+val guiTest =  tasks.register<Test>("guiTest") {
     description = "Runs tests requiring the JavaFX toolkit (tag 'gui'); needs a display or xvfb-run"
     group = "verification"
     testClassesDirs = sourceSets.test.get().output.classesDirs
