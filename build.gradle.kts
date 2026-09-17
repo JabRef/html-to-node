@@ -10,7 +10,7 @@ plugins {
 group = "org.jabref"
 // -PversionSuffix=PR17 turns 1.0.0-SNAPSHOT into 1.0.0-PR17-SNAPSHOT, so a pull request
 // snapshot is identifiable and does not clobber the one built from main
-version = "0.4.0" + (findProperty("versionSuffix")?.let { "-$it" } ?: "") + "-SNAPSHOT"
+version = "0.3.0" + (findProperty("versionSuffix")?.let { "-$it" } ?: "") + "-SNAPSHOT"
 
 repositories {
     mavenCentral()

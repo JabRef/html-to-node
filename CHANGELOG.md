@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### [0.3.0] - 2026-09-17
+
 ### Changed
 
 - Migrated the RichTextArea renderer to the JavaFX 27 incubator APIs.
@@ -30,5 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The module is null-marked with [JSpecify](https://jspecify.dev/) annotations.
 
 [Unreleased]: https://github.com/JabRef/html-to-node/compare/v0.2.0...HEAD
+[0.3.0]: https://github.com/JabRef/html-to-node/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/JabRef/html-to-node/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/JabRef/html-to-node/releases/tag/v0.1.0
