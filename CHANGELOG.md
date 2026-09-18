@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Migrated the RichTextArea renderer to the JavaFX 27 incubator APIs.
+- Baseline for JavaFX is jdk25 and thus this project now requires Java 25.
+
 ## [0.2.0] - 2026-07-22
 
 ### Added

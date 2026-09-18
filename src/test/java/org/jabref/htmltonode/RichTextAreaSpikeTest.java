@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("gui")
 class RichTextAreaSpikeTest {
 
-    private static final StyleAttribute<String> HREF = new StyleAttribute<>("HREF", String.class, false);
+    private static final StyleAttribute<String> HREF = StyleAttribute.character("HREF", String.class);
 
     @BeforeAll
     static void startToolkit() throws InterruptedException {
@@ -83,7 +83,7 @@ class RichTextAreaSpikeTest {
         assertEquals("Kopp, O.: Some Paper", model.getPlainText(0));
         assertEquals("doi.org/10.1/x", model.getPlainText(1));
 
-        StyleAttributeMap linkAttrs = model.getStyleAttributeMap(null, jfx.incubator.scene.control.richtext.TextPos.ofLeading(1, 3));
+        StyleAttributeMap linkAttrs = model.getStyleAttributeMap(null, jfx.incubator.scene.control.richtext.TextPos.ofLeading(1, 3), false);
         assertEquals("https://doi.org/10.1/x", linkAttrs.get(HREF));
         assertEquals(Boolean.TRUE, linkAttrs.get(StyleAttributeMap.UNDERLINE));
     }
