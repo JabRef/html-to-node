@@ -26,7 +26,6 @@ in the POM because OpenJFX artifacts are platform-specific.
 
 ## Installation
 
-Snapshots are published to the
 Released versions are available from [Maven Central](https://central.sonatype.com/artifact/org.jabref/html-to-node):
 
 ```kotlin
