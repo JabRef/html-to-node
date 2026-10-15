@@ -54,6 +54,8 @@ dependencies {
     testImplementation("org.openjfx:javafx-base:$javafxVersion:$jfxPlatform")
     testImplementation("org.openjfx:javafx-graphics:$javafxVersion:$jfxPlatform")
     testImplementation("org.openjfx:javafx-controls:$javafxVersion:$jfxPlatform")
+    testImplementation("org.openjfx:javafx-media:$javafxVersion:$jfxPlatform")
+    testImplementation("org.openjfx:javafx-web:$javafxVersion:$jfxPlatform")
     testImplementation("org.openjfx:jfx-incubator-input:$javafxVersion:$jfxPlatform")
     testImplementation("org.openjfx:jfx-incubator-richtext:$javafxVersion:$jfxPlatform")
 
