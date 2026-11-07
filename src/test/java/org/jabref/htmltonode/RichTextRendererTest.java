@@ -134,6 +134,39 @@ class RichTextRendererTest {
     }
 
     @Test
+    void subscriptAndSuperscriptCarryScaledBaselineOffsets() {
+        StyledTextModel model = model("x<sub>i</sub><sup style=\"font-size: 150%\">2</sup>");
+
+        StyleAttributeMap subscript = attributesAt(model, 0, 1);
+        assertEquals(BASE * 0.8, subscript.get(StyleAttributeMap.FONT_SIZE));
+        assertEquals(0.18 * BASE * 0.8, subscript.get(RichTextRenderer.BASELINE_OFFSET), 1e-9);
+
+        StyleAttributeMap superscript = attributesAt(model, 0, 2);
+        assertEquals(BASE * 0.8 * 1.5, superscript.get(StyleAttributeMap.FONT_SIZE));
+        assertEquals(-0.42 * BASE * 0.8 * 1.5, superscript.get(RichTextRenderer.BASELINE_OFFSET), 1e-9);
+    }
+
+    @Test
+    void normalTextCarriesZeroBaselineOffset() {
+        assertEquals(0.0, attributesAt(model("text"), 0, 0).get(RichTextRenderer.BASELINE_OFFSET));
+    }
+
+    @Test
+    void inlineFontStylesAreAppliedToRichTextAttributes() {
+        StyleAttributeMap attributes = attributesAt(model("<span style=\"font-family: serif; font-size: 150%\">text</span>"), 0, 0);
+
+        assertEquals("Serif", attributes.get(StyleAttributeMap.FONT_FAMILY));
+        assertEquals(BASE * 1.5, attributes.get(StyleAttributeMap.FONT_SIZE));
+    }
+
+    @Test
+    void superscriptKeepsParagraphSpacing() {
+        StyledTextModel model = model("<p>before <sup>2</sup></p><p>after</p>");
+
+        assertEquals(BASE, model.getParagraph(1).getParagraphAttributes().get(StyleAttributeMap.SPACE_ABOVE));
+    }
+
+    @Test
     void blockImageBecomesEmbeddedParagraph() {
         StyledTextModel model = model("<img style=\"display:block; height:12rem;\" src=\"data:image/png;base64,"
                 + "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==\"> <br>text");
