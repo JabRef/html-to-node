@@ -1,11 +1,16 @@
 package org.jabref.htmltonode;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 
 import org.jabref.htmltonode.rich.HtmlRichTextArea;
@@ -73,6 +78,14 @@ class HtmlRichTextAreaTest {
         }
     }
 
+    private static void collectTextNodes(Node node, List<Text> textNodes) {
+        if (node instanceof Text text) {
+            textNodes.add(text);
+        } else if (node instanceof Parent parent) {
+            parent.getChildrenUnmodifiable().forEach(child -> collectTextNodes(child, textNodes));
+        }
+    }
+
     @Test
     void linkRunGetsHandCursorWhileInheritedHandlersStillApply() throws Exception {
         AtomicReference<Throwable> error = new AtomicReference<>();
@@ -109,5 +122,44 @@ class HtmlRichTextAreaTest {
                 "link run should request the hand cursor, was: " + linkStyle.get());
         assertFalse(boldStyle.get().isEmpty(), "inherited bold handler should still apply a style");
         assertFalse(boldStyle.get().contains("-fx-cursor"), "non-link run must not get the hand cursor");
+    }
+
+    @Test
+    void subscriptAndSuperscriptApplyBaselineOffsetsToTextNodes() throws Exception {
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        AtomicReference<Double> subscriptOffset = new AtomicReference<>();
+        AtomicReference<Double> superscriptOffset = new AtomicReference<>();
+        CountDownLatch done = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            try {
+                HtmlRichTextArea area = new HtmlRichTextArea(
+                        RichTextRenderer.buildModel(
+                                HtmlToNode.parse("x<sub>i</sub><sup>2</sup>"),
+                                HtmlRenderOptions.defaults().withBaseFontSize(12)));
+                area.setEditable(false);
+                Scene scene = new Scene(new StackPane(area), 400, 300);
+                area.applyCss();
+                area.layout();
+
+                List<Text> textNodes = new ArrayList<>();
+                collectTextNodes(scene.getRoot(), textNodes);
+                assertTrue(textNodes.size() >= 3, "expected text nodes for all three runs");
+                subscriptOffset.set(textNodes.get(1).getTranslateY());
+                superscriptOffset.set(textNodes.get(2).getTranslateY());
+                scene.getRoot().applyCss();
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                done.countDown();
+            }
+        });
+
+        assertTrue(done.await(15, TimeUnit.SECONDS), "FX task timed out");
+        if (error.get() != null) {
+            throw new AssertionError("FX task failed", error.get());
+        }
+        assertTrue(subscriptOffset.get() > 0);
+        assertTrue(superscriptOffset.get() < 0);
     }
 }

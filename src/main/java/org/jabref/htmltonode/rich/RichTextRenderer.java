@@ -35,6 +35,8 @@ public final class RichTextRenderer {
 
     /// Character attribute carrying a link target; resolved on mouse click.
     public static final StyleAttribute<String> HREF = StyleAttribute.character("HREF", String.class);
+    /// Character attribute carrying the baseline offset for subscript and superscript runs.
+    public static final StyleAttribute<Double> BASELINE_OFFSET = StyleAttribute.character("BASELINE_OFFSET", Double.class);
 
     /// Fallback link color; matches FxRenderer's un-themed link fill.
     private static final Color LINK_COLOR = Color.web("#0b66c3");
@@ -288,7 +290,9 @@ public final class RichTextRenderer {
 
     private StyleAttributeMap attributes(InlineStyle style, double sizeFactor) {
         StyleAttributeMap.Builder builder = StyleAttributeMap.builder();
-        builder.setFontSize(baseSize * style.fontScale() * sizeFactor);
+        double fontSize = baseSize * style.fontScale() * sizeFactor;
+        builder.setFontSize(fontSize);
+        builder.set(BASELINE_OFFSET, baselineOffset(style.verticalPosition(), fontSize));
         String family = style.fontFamily() != null
                         ? style.fontFamily()
                         : (style.monospace() ? options.monospaceFontFamily() : baseFamily);
@@ -314,5 +318,13 @@ public final class RichTextRenderer {
             builder.set(HREF, style.href());
         }
         return builder.build();
+    }
+
+    private static double baselineOffset(InlineStyle.VerticalPosition verticalPosition, double fontSize) {
+        return switch (verticalPosition) {
+            case SUPER -> -0.42 * fontSize;
+            case SUB -> 0.18 * fontSize;
+            case NORMAL -> 0;
+        };
     }
 }

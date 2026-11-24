@@ -43,6 +43,8 @@ public final class HtmlRichTextArea extends RichTextArea {
         StyleHandlerRegistry.Builder builder = StyleHandlerRegistry.builder(RichTextArea.styleHandlerRegistry);
         builder.setSegHandler(RichTextRenderer.HREF,
                 (RichTextArea control, CellContext context, String href) -> context.addStyle(HAND_CURSOR_STYLE));
+        builder.setSegHandler(RichTextRenderer.BASELINE_OFFSET,
+                (RichTextArea control, CellContext context, Double offset) -> context.getNode().setTranslateY(offset));
         return builder.build();
     }
 }
